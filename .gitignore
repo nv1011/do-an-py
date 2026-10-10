@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Sao luu tu dong (giu lai thu muc, bo noi dung)
+backup/*
+!backup/.gitkeep
+
+# Du lieu chay thu cua tung may
+data/*.local.json
