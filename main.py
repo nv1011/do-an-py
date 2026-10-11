@@ -1,1 +1,1 @@
-print("Hello mfs")
+print("Hello idiota")
