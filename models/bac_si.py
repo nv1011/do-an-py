@@ -67,6 +67,6 @@ class BacSi(Nguoi):
         )
     
     def __str__(self):
-        return super().__str__() + (f"Mã chuyên khoa: {self._ma_chuyen_khoa}"
-            f"Học vị: {self._hoc_vi}\n"
-            f"Năm vào làm: {self._nam_vao_lam}\n")
+        return super().__str__() + (f"Mã chuyên khoa: {self.ma_chuyen_khoa}\n"
+            f"Học vị: {self.hoc_vi}\n"
+            f"Năm vào làm: {self.nam_vao_lam}\n")
