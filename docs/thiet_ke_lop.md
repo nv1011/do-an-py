@@ -1112,16 +1112,95 @@ Dưới đây là đặc tả chuẩn JSON Schema (Draft 7 / 2020-12) cùng dữ
 
 ---
 
-## 7. KẾ HOẠCH PHÂN CHIA TRIỂN KHAI CHO 3 THÀNH VIÊN
+## 7. BẢNG PHÂN CHIA VAI TRÒ VÀ KẾ HOẠCH TRIỂN KHAI (NOTION TASK MATRIX)
 
-- **Thành viên A (Models & Validators & Store)**:
-  - Hoàn thiện các lớp còn lại: `ChuyenKhoa`, `DichVu`, `LichHen`, `PhieuKham`, `TaiKhoan` tương thích chuẩn `to_dict()` và `from_dict()`.
-  - Cài đặt `services/json_store.py` và `services/tao_du_lieu_mau.py` tạo dữ liệu mẫu khớp JSON Schema trên.
-- **Thành viên B (Views & GUI)**:
-  - Kết nối dữ liệu vào `TabBenhNhan`.
-  - Triển khai `TabLichHen` và component `appointment_card.py` (hiển thị thẻ lịch khám và thông báo trùng lịch theo wireframe 4).
-  - Triển khai `TabPhieuKham` và `TabThongKe`.
-- **Thành viên C (Services & Business Logic)**:
-  - Cài đặt các class quản lý: `QuanLyLichHen`, `QuanLyBenhNhan`, `QuanLyBacSi`, `QuanLyPhieuKham`, `QuanLyTaiKhoan`.
-  - Xây dựng thuật toán kiểm tra xung đột trùng lịch `kiem_tra_trung_lich`.
-  - Cài đặt module `thong_ke.py` xuất báo cáo.
+Dựa trên bảng phân chia công việc chính thức của nhóm (theo dõi trên Notion), dự án phân bổ vai trò cụ thể cho 3 thành viên theo lộ trình từ Tuần 9 đến Tuần 14 như sau:
+
+### 7.1. Định vị Trách nhiệm Cốt lõi của Từng Thành viên
+
+| Thành viên | Trách nhiệm chính (Core Responsibility) | Phạm vi Module / Thư mục chính |
+| :--- | :--- | :--- |
+| **Thành viên A** | **Models, OOP, JSON Store, Logic Quản lý & Xác thực** | `models/`, `services/json_store.py`, `services/quan_ly_*.py`, `utils/validators.py`, Sơ đồ lớp |
+| **Thành viên B** | **Giao diện người dùng (GUI / Tkinter), Custom Widgets & Trực quan hóa** | `views/`, `views/widgets/`, Luồng tương tác, Canvas biểu đồ, Bố cục giao diện |
+| **Thành viên C** | **Hạ tầng dự án, API Ngoại vi, Kiểm thử (Testing), Thống kê & Báo cáo** | Setup Repo, `config.py`, `services/api_dia_chi.py`, `services/thong_ke.py`, `services/tao_du_lieu_mau.py`, `backup/`, Test cases, Đóng gói EXE |
+| **Cả nhóm** | **Tích hợp hệ thống, Rà soát, Báo cáo & Thuyết trình** | Hợp đồng hàm, Ghép nhánh Git (Merge), Slide, Báo cáo Word/PDF, Tổng duyệt Demo |
+
+---
+
+### 7.2. Kế hoạch Chi tiết theo Từng Thành viên
+
+#### 1. Thành viên A (Data Models, Logic Quản lý & Lưu trữ)
+| Tuần | Tên công việc | Kết quả kỳ vọng | Priority | Trạng thái |
+| :---: | :--- | :--- | :---: | :---: |
+| **9** | Viết lớp JsonStore (đọc/ghi/sao lưu, bắt lỗi file) | File `services/json_store.py`: đọc/ghi bằng `with`, xử lý file thiếu/rỗng/sai định dạng, có sao lưu; chạy thử được với `benh_nhan.json` | High | Chưa làm |
+| **9** | Viết lớp trừu tượng Nguoi, BenhNhan, BacSi (to_dict/from_dict) | `models/nguoi.py`, `models/benh_nhan.py`, `models/bac_si.py`; tạo được đối tượng hoàn chỉnh | High | Đang làm |
+| **9** | Vẽ sơ đồ lớp bản nháp | `docs/so_do_lop_v0` (trên Draw.io) | Medium | Chưa làm |
+| **9** | Chốt thuộc tính, kiểu dữ liệu từng lớp và JSON schema | `docs/thiet_ke_lop.md` và các file JSON mẫu hoàn chỉnh | High | Đang làm |
+| **10** | TaiKhoan và đăng nhập 2 vai trò (băm mật khẩu có salt) | `services/quan_ly_tai_khoan.py`, `data/tai_khoan.json` mẫu (admin, le_tan) | High | Chưa làm |
+| **10** | QuanLyBenhNhan: CRUD và tìm kiếm theo $\ge 2$ tiêu chí | `services/quan_ly_benh_nhan.py`, chạy thử nghiệm thủ công được | High | Chưa làm |
+| **10** | Cập nhật sơ đồ lớp v1 (thêm LichHen, TaiKhoan, lớp giao diện) | `docs/so_do_lop_v1` | High | Chưa làm |
+| **10** | QuanLyBacSi: CRUD | `services/quan_ly_bac_si.py` | High | Chưa làm |
+| **10** | LichHen và QuanLyLichHen có kiểm tra trùng lịch bác sĩ | `models/lich_hen.py`, `services/quan_ly_lich_hen.py`, chặn được lịch trùng | High | Chưa làm |
+| **10** | `validators.py`: Regex số điện thoại và mã BHYT | `utils/validators.py` kèm các ví dụ kiểm tra đúng/sai | High | Chưa làm |
+| **11** | Đổi mật khẩu và quản lý tài khoản đầy đủ (admin tạo/khóa tài khoản) | Chức năng đổi mật khẩu, mật khẩu luôn lưu dạng băm an toàn | Medium | Chưa làm |
+| **11** | PhieuKham, DichVu và QuanLyPhieuKham (ghi nội dung khám, dịch vụ, tính tiền) | `models/phieu_kham.py`, `models/dich_vu.py`, `services/quan_ly_phieu_kham.py`; tạo phiếu và tính tổng tiền đúng | High | Chưa làm |
+| **12** | Rà soát validators và ràng buộc dữ liệu (trùng mã, số âm, ngày không hợp lệ) | Danh sách ràng buộc đã kiểm tra, mỗi lỗi có thông báo rõ ràng | High | Chưa làm |
+| **13** | Hoàn thiện sơ đồ lớp và bảng mô tả lớp, thuộc tính, phương thức | `docs/so_do_lop_final` và bảng mô tả đưa vào báo cáo | High | Chưa làm |
+| **13** | Kiểm thử logic: file JSON mất/rỗng/sai định dạng, trùng mã, dữ liệu rỗng | Mỗi tình huống có test case và kết quả thực tế trong bảng kiểm thử | High | Chưa làm |
+| **13** | Viết chương Thiết kế lớp và dữ liệu JSON của báo cáo | Chương báo cáo hoàn chỉnh kèm sơ đồ lớp chi tiết | High | Chưa làm |
+
+#### 2. Thành viên B (Giao diện Tkinter & Custom Widgets)
+| Tuần | Tên công việc | Kết quả kỳ vọng | Priority | Trạng thái |
+| :---: | :--- | :--- | :---: | :---: |
+| **9** | Dựng khung cửa sổ chính (Menu + Notebook nhiều tab) | Ảnh chụp cửa sổ chính chạy được từ `main.py` (Menu + Notebook $\ge 3$ tab, dữ liệu giả) | High | Đang làm |
+| **9** | Vẽ wireframe 4 màn hình (đăng nhập, chính, bệnh nhân, lịch hẹn) | Ảnh wireframe trong `docs/` | Medium | Hoàn thành |
+| **9** | Form bệnh nhân với Treeview (dữ liệu giả) | `views/tab_benh_nhan.py` hiển thị bảng dữ liệu được | High | Hoàn thành |
+| **10** | Tab lịch hẹn: form đặt lịch, DateEntry, Treeview, báo lỗi khi trùng | `views/tab_lich_hen.py`, demo được một lần trùng bị chặn thành công | High | Chưa làm |
+| **10** | Màn hình đăng nhập và phân quyền ẩn/hiện chức năng | `views/dang_nhap_view.py`, 2 vai trò thấy giao diện/menu khác nhau | High | Đang làm |
+| **10** | Nối tab bệnh nhân với QuanLyBenhNhan (thêm/sửa/xóa/tìm, Messagebox xác nhận) | Quay video màn hình hoặc ảnh chụp CRUD hoạt động thực tế | High | Chưa làm |
+| **11** | Bắt đầu AppointmentCard (khung Custom Widget kế thừa tk.Frame) | `views/widgets/appointment_card.py` hiển thị được một lịch hẹn mẫu | Medium | Chưa làm |
+| **11** | Tab phiếu khám: form ghi khám, chọn dịch vụ, Treeview danh sách phiếu | `views/tab_phieu_kham.py` nối với `QuanLyPhieuKham`, ảnh chụp chạy được | High | Chưa làm |
+| **11** | Tìm lịch theo ngày và lọc theo bác sĩ trên tab lịch hẹn | Ô lọc ngày (DateEntry) và Combobox bác sĩ hoạt động đồng bộ | Medium | Chưa làm |
+| **12** | Tab thống kê với biểu đồ Canvas (cột hoặc đường) | `views/tab_thong_ke.py` vẽ biểu đồ bằng Canvas từ `thong_ke.py`, ảnh chụp | High | Chưa làm |
+| **12** | Hoàn thiện AppointmentCard và dùng trong tab lịch hẹn | Lịch hẹn hiển thị dạng thẻ trực quan, bấm vào thẻ xem chi tiết | Medium | Chưa làm |
+| **13** | Kiểm thử giao diện: nhập sai, thu phóng cửa sổ, không trộn pack() và grid() | Không lỗi bố cục, mọi ô nhập sai đều hiện thông báo `messagebox` | High | Chưa làm |
+| **13** | Viết chương Giao diện của báo cáo (ảnh chụp từng màn hình, mô tả widget) | Chương báo cáo giao diện hoàn chỉnh kèm ảnh minh họa | High | Chưa làm |
+
+#### 3. Thành viên C (Hạ tầng, Dữ liệu ngoại vi, Kiểm thử & Đóng gói)
+| Tuần | Tên công việc | Kết quả kỳ vọng | Priority | Trạng thái |
+| :---: | :--- | :--- | :---: | :---: |
+| **9** | Tạo repo GitHub, khung thư mục MVC, .gitignore, requirements.txt | Repo có cấu trúc trên nhánh `main`, cả 3 người clone được | High | Hoàn thành |
+| **9** | Viết config.py (đường dẫn tương đối, hằng số) | `config.py` chạy được độc lập từ mọi máy | Medium | Chưa làm |
+| **9** | Gửi giảng viên câu hỏi về mẫu báo cáo và mẫu bảng đóng góp | Câu trả lời của giảng viên lưu trong thư mục `docs/` | Medium | Chưa làm |
+| **9** | Viết tao_du_lieu_mau.py sinh bệnh nhân và bác sĩ bằng random | Dữ liệu sinh tự động vào `data/*.json` ($\ge 20$ bệnh nhân, $\ge 5$ bác sĩ) | Medium | Chưa làm |
+| **9** | Thử gọi API địa chỉ, xem cấu trúc JSON trả về | `docs/api_dia_chi_notes.md` (ghi rõ phiên bản API đã lựa chọn) | Medium | Chưa làm |
+| **9** | Khởi tạo bảng test case ($\ge 10$ dòng: input và kết quả mong đợi) | Tài liệu bảng kiểm thử ban đầu `docs/bang_kiem_thu` | Medium | Chưa làm |
+| **10** | Gọi API địa chỉ và lưu dia_chi.json (có cache khi mất mạng) | `services/api_dia_chi.py` + `data/dia_chi.json`; xử lý timeout/mất mạng và đọc cache | Medium | Chưa làm |
+| **10** | Chạy $\ge 5$ test case và ghi kết quả thực tế | Bảng kiểm thử có $\ge 5$ dòng đã điền đầy đủ kết quả thực tế | High | Chưa làm |
+| **10** | Ghép nhánh lần 1 vào main, chạy thử từ main.py trên máy cả 3 người | Gắn Tag `v0.1`, ảnh chụp phần mềm chạy trên máy của cả 3 thành viên | High | Chưa làm |
+| **11** | Gắn dữ liệu địa chỉ (tỉnh, phường/xã) vào Combobox form bệnh nhân | Chọn tỉnh thì danh sách phường/xã tự động lọc theo, ảnh chụp minh chứng | Medium | Chưa làm |
+| **11** | Viết thong_ke.py (số lượt khám, doanh thu theo tháng và theo bác sĩ) | `services/thong_ke.py` trả về kết quả chính xác theo dữ liệu mẫu | High | Chưa làm |
+| **11** | Cập nhật bảng test case cho phiếu khám và thống kê | Bảng kiểm thử bổ sung thêm các kịch bản kiểm thử mới | Low | Chưa làm |
+| **12** | Xuất báo cáo ra CSV/JSON (theo khoảng ngày) | Nút xuất báo cáo hoạt động, file xuất ra mở được bằng Microsoft Excel | Medium | Chưa làm |
+| **12** | Chức năng sao lưu và khôi phục dữ liệu | Thư mục `backup/` có bản sao kèm dấu thời gian, khôi phục thành công | Medium | Chưa làm |
+| **12** | Viết sys_info.py (dùng module sys) và hiển thị trong mục Giới thiệu | `utils/sys_info.py`, hiển thị hộp thoại thông tin phiên bản Python | Low | Chưa làm |
+| **13** | Hoàn thành $\ge 10$ test case; kiểm thử mất mạng khi gọi API | Bảng kiểm thử đầy đủ (ca hợp lệ, không hợp lệ, giá trị biên) kèm kết quả | High | Chưa làm |
+| **13** | Soát mã: không còn except trống, không đường dẫn tuyệt đối, không dữ liệu nhạy cảm | Danh sách mã nguồn đã rà soát, ứng dụng chạy mượt trên máy khác | High | Chưa làm |
+| **13** | Viết chương Chức năng bổ sung, API và Kiểm thử của báo cáo | Chương báo cáo hoàn chỉnh kèm bảng số liệu kiểm thử | High | Chưa làm |
+| **14** | Đóng gói exe bằng PyInstaller và chạy thử trên máy chưa cài Python | File `.exe` đóng gói độc lập chạy được, kèm dữ liệu mẫu | High | Chưa làm |
+| **14** | Ghi nguồn thư viện, API và tài liệu tham khảo | Hoàn thiện mục Tài liệu tham khảo trong báo cáo | Medium | Chưa làm |
+| **14** | Tổng hợp báo cáo Word và xuất PDF | Báo cáo `.docx` và `.pdf` thống nhất định dạng, canh lề chuẩn quy cách | High | Chưa làm |
+| **14** | Viết README.md hướng dẫn cài đặt và chạy | `README.md` nêu rõ phiên bản Python, thư viện, hướng dẫn sinh dữ liệu mẫu | Medium | Chưa làm |
+
+#### 4. Phối hợp Chung (Cả Nhóm)
+| Tuần | Tên công việc | Kết quả kỳ vọng | Priority | Trạng thái |
+| :---: | :--- | :--- | :---: | :---: |
+| **9** | Họp chốt phạm vi và hợp đồng hàm giữa A và B | `docs/hop_dong_ham.md` liệt kê danh sách tên hàm các lớp quản lý | High | Chưa làm |
+| **10** | Làm slide báo cáo 5–7 trang và tập demo 5 phút | File slide thuyết trình và kịch bản demo phân công chi tiết | High | Chưa làm |
+| **12** | Chốt chức năng (feature freeze): từ đây chỉ sửa lỗi | Danh sách chức năng chốt sổ, nhánh `main` đạt trạng thái chạy ổn định | High | Chưa làm |
+| **13** | Ghép toàn bộ nhánh vào main và gắn tag v1.0-candidate | Gắn tag `v1.0-candidate`, cả 3 người nghiệm thu chạy thử từ `main.py` | High | Chưa làm |
+| **14** | Viết báo cáo đóng góp: bảng phân công, tỷ lệ, bằng chứng git shortlog | Bảng đóng góp có chữ ký xác nhận của cả 3, kèm trích xuất `git shortlog` | High | Chưa làm |
+| **14** | Làm slide cuối kỳ và tập demo 2 lần | File slide hoàn thiện, kịch bản khớp thời lượng quy định của môn học | High | Chưa làm |
+| **14** | Mỗi người luyện giải thích phần của mình và hiểu sơ qua phần 2 bạn còn lại | Cả 3 thành viên sẵn sàng trả lời phản biện về mọi phần của đồ án | Medium | Chưa làm |
+| **14** | Soát checklist cuối của giảng viên và nộp bài trước hạn | Gói sản phẩm hoàn chỉnh: mã nguồn, dữ liệu mẫu, báo cáo, slide, exe, hướng dẫn | High | Chưa làm |
+
