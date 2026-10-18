@@ -26,9 +26,30 @@ else:
 ```
 
 ### 1.2. Phân quyền vai trò người dùng (Access Control)
-Hệ thống chốt **2 vai trò duy nhất**:
-1. `admin`: Toàn quyền thao tác trên mọi tab; có quyền Sửa, Xóa dữ liệu bệnh nhân/bác sĩ và xem Tab Thống kê, Báo cáo.
-2. `le_tan`: Chỉ có quyền Xem thông tin, Đặt lịch hẹn, Thêm bệnh nhân mới; **khóa (disable) các nút Sửa, Xóa bệnh nhân và ẩn/khóa Tab Thống kê**.
+Hệ thống chốt **2 vai trò duy nhất**: `admin` và `le_tan`.  
+> [!IMPORTANT]
+> **Cơ chế thực thi**: Phân quyền do **tầng Giao diện (UI / Thành viên B)** thực hiện (ẩn các tab hoặc khóa/disable các nút bấm tương ứng sau khi đăng nhập). Tầng Service thực hiện xử lý nghiệp vụ khi được gọi.
+
+| Chức năng nghiệp vụ | `admin` | `le_tan` | Cơ chế UI thực hiện |
+| :--- | :---: | :---: | :--- |
+| Xem danh sách bệnh nhân, bác sĩ, lịch hẹn | ✓ | ✓ | Toàn quyền xem |
+| Thêm bệnh nhân mới (`them`) | ✓ | ✓ | Mở form nhập liệu |
+| Đặt lịch hẹn, sửa lịch, hủy lịch hẹn | ✓ | ✓ | Tiếp nhận và điều phối |
+| Sửa thông tin, Xóa hồ sơ bệnh nhân (`sua`, `xoa`) | ✓ | ✗ | **UI disable / ẩn nút Sửa & Xóa** |
+| Quản lý bác sĩ (`QuanLyBacSi`) | ✓ | ✗ | **UI ẩn chức năng quản lý nhân sự** |
+| Quản lý tài khoản (`QuanLyTaiKhoan`) | ✓ | ✗ | **UI ẩn tab Quản trị tài khoản** |
+| Tạo phiếu khám (`tao_phieu_kham`), Thêm dịch vụ | ✓ | ✓ | Lễ tân lập phiếu khám ban đầu |
+| Thu tiền thanh toán (`thanh_toan`) | ✓ | ✓ | Lễ tân thu tiền và in hóa đơn |
+| **Hoàn tất khám (`hoan_tat_kham`)** | **✓** | **✗** | **Lễ tân không có quyền** (Chỉ admin / bác sĩ chuyên môn mới chẩn đoán & kê đơn) |
+| Tab Thống kê doanh thu & Xuất báo cáo | ✓ | ✗ | **UI ẩn hoàn toàn Tab Thống kê** |
+
+### 1.3. Quy chuẩn Truyền dữ liệu Ngày tháng (Date Format)
+- **Giao tiếp View ↔ Service**: Luôn truyền chuỗi theo chuẩn Việt Nam **`DD-MM-YYYY`** (Ví dụ: `"15-05-1990"`).
+- **Service xử lý**: Service sẽ parse chuỗi `DD-MM-YYYY` sang đối tượng `datetime.date`, đồng thời kiểm tra tính hợp lệ bằng `utils.validators.la_ngay_hop_le` (bao gồm xử lý năm nhuận, ngày 29/02, 30/02...). Nếu ngày không hợp lệ, trả về `(False, "Ngày tháng không hợp lệ!")`.
+
+### 1.4. Chia sẻ Hàm Kiểm tra Dữ liệu (Validation)
+- Thành viên B **import trực tiếp các hàm kiểm tra từ `utils/validators.py`** (`la_sdt_hop_le`, `la_ma_bhyt_hop_le`, `la_ngay_hop_le`, `la_email_hop_le`) để kiểm tra dữ liệu trực tiếp trên form giao diện.
+- Tránh việc tự viết hoặc copy lại các biểu thức Regex, giúp đảm bảo tính đồng bộ tuyệt đối khi có thay đổi nghiệp vụ.
 
 ---
 
@@ -40,7 +61,8 @@ Hệ thống chốt **2 vai trò duy nhất**:
 | :--- | :--- | :--- |
 | `lay_tat_ca()` | `list[BenhNhan]` | Lấy danh sách toàn bộ bệnh nhân từ bộ nhớ/file JSON |
 | `tim_theo_ma(ma: str)` | `BenhNhan \| None` | Tìm chính xác bệnh nhân theo mã định danh (14 số) |
-| `tim_kiem(tu_khoa: str, tieu_chi: str)` | `list[BenhNhan]` | Tìm kiếm không phân biệt hoa thường và không dấu tiếng Việt (xử lý nội bộ trong Service). `tieu_chi` thuộc `["ho_ten", "ma", "sdt", "bhyt"]` |
+| `tim_kiem(tu_khoa: str = "", tieu_chi: str = "ho_ten", ho_ten: str = None, so_bhyt: str = None, **tieu_chi_khac)` | `list[BenhNhan]` | Tìm kiếm tiếng Việt không dấu. Hỗ trợ 2 tiêu chí cốt lõi: **Họ tên (`ho_ten`)** và **Số BHYT (`bhyt`/`so_bhyt`)**, kèm các tiêu chí mở rộng (`sdt`, `ma`). Hỗ trợ cả tìm đơn tiêu chí lẫn kết hợp đa tiêu chí |
+| `tim_kiem_ket_hop(ho_ten: str = "", so_bhyt: str = "", sdt: str = "", ma: str = "")` | `list[BenhNhan]` | Tìm kiếm kết hợp đồng thời nhiều tiêu chí (ít nhất 2 tiêu chí bắt buộc hỗ trợ: Họ tên và Số BHYT, lọc theo điều kiện AND) |
 | `them(du_lieu: dict)` | `tuple[bool, str, BenhNhan \| None]` | Thêm bệnh nhân mới. Tự động kiểm tra trùng `ma_dinh_danh`, `sdt`, validate regex SĐT `0\d{9}` và email |
 | `sua(ma: str, du_lieu_moi: dict)` | `tuple[bool, str]` | Cập nhật thông tin bệnh nhân có mã `ma`. Quyền: Chỉ `admin` |
 | `xoa(ma: str)` | `tuple[bool, str]` | Xóa bệnh nhân. Quyền: Chỉ `admin`. Phải kiểm tra ràng buộc: không xóa nếu bệnh nhân đang có lịch hẹn hoặc phiếu khám chưa kết thúc |
@@ -86,7 +108,7 @@ Hệ thống chốt **2 vai trò duy nhất**:
 | `tao_phieu_kham(du_lieu: dict)` | `tuple[bool, str, PhieuKham \| None]` | Khởi tạo phiếu khám ban đầu (có thể từ lịch hẹn hoặc khám vãng lai). Trạng thái khám ban đầu là `"Dang_kham"` |
 | `them_dich_vu(ma_pk: str, ma_dv: str, so_luong: int = 1)` | `tuple[bool, str]` | Thêm dịch vụ cận lâm sàng vào phiếu (chụp lại đơn giá dịch vụ tại thời điểm khám) |
 | `xoa_dich_vu(ma_pk: str, ma_dv: str)` | `tuple[bool, str]` | Bỏ dịch vụ đã chọn khỏi phiếu khám |
-| `hoan_tat_kham(ma_pk: str, chan_doan: str, loi_dan: str, don_thuoc: list, ngay_tai_kham: str = None)` | `tuple[bool, str]` | Bác sĩ hoàn thành chẩn đoán và kê đơn, chuyển `trang_thai_kham = "Hoan_thanh"` |
+| `hoan_tat_kham(ma_pk: str, chan_doan: str, loi_dan: str, don_thuoc: list, ngay_tai_kham: str = None)` | `tuple[bool, str]` | Bác sĩ/Admin hoàn thành chẩn đoán và kê đơn, chuyển `trang_thai_kham = "Hoan_thanh"`. **Quyền: Chỉ admin / bác sĩ chuyên môn (Lễ tân không có quyền)** |
 | `thanh_toan(ma_pk: str)` | `tuple[bool, str, float]` | Xác nhận bệnh nhân đã thanh toán viện phí (`trang_thai_thanh_toan = "Da_thanh_toan"`), trả về tổng tiền đã thu |
 | `sinh_ma_moi()` | `str` | Sinh mã tự động `PK001`, `PK002`... |
 
@@ -105,9 +127,16 @@ Hệ thống chốt **2 vai trò duy nhất**:
 
 ### 2.6. `ThongKe` (`services/thong_ke.py`)
 
+> [!NOTE]
+> **Quy chuẩn tính toán Thống kê**:
+> - **Lượt khám**: Số phiếu khám có `trang_thai_kham == "Hoan_thanh"` tính theo `ngay_kham`.
+> - **Doanh thu**: Tổng tiền của các phiếu khám có `trang_thai_thanh_toan == "Da_thanh_toan"` tính theo `ngay_kham`.
+
 | Tên hàm & Tham số | Kiểu trả về | Mô tả & Lưu ý |
 | :--- | :--- | :--- |
-| `thong_ke_doanh_thu_theo_thang(nam: int)` | `dict[int, float]` | Trả về từ điển `{tháng: tổng_tiền}` của các phiếu khám đã thanh toán trong năm |
+| `thong_ke_theo_thang(nam: int)` | `dict[int, dict]` | Trả về `{tháng: {"luot_kham": n, "doanh_thu": x}}` (từ tháng 1 đến 12) phục vụ Thành viên B vẽ Canvas đồng bộ |
+| `thong_ke_theo_ngay(nam: int, thang: int)` | `dict[int, dict]` | Trả về `{ngày: {"luot_kham": n, "doanh_thu": x}}` trong tháng |
+| `thong_ke_doanh_thu_theo_thang(nam: int)` | `dict[int, float]` | Trả về `{tháng: tổng_tiền}` của các phiếu khám đã thanh toán trong năm |
 | `thong_ke_luot_kham_theo_bac_si(tu_ngay: date, den_ngay: date)` | `dict[str, int]` | Trả về `{tên_bác_sĩ: số_ca_khám}` phục vụ vẽ biểu đồ cột/đường trên Canvas |
 | `thong_ke_co_cau_chuyen_khoa(tu_ngay: date, den_ngay: date)` | `dict[str, int]` | Thống kê số lượt khám theo từng chuyên khoa |
 | `xuat_bao_cao_csv(duong_dan: str, tu_ngay: date, den_ngay: date)` | `tuple[bool, str]` | Xuất dữ liệu báo cáo ra file `.csv` mở được bằng Microsoft Excel |
