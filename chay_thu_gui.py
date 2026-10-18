@@ -1,9 +1,4 @@
-"""File chạy thử riêng cho phần giao diện
-
-Luồng: màn hình đăng nhập -> đăng nhập đúng -> cửa sổ chính.
-Bấm Hệ thống -> Đăng xuất thì quay lại màn hình đăng nhập; Thoát thì tắt hẳn.
-Tài khoản thử: admin / admin123   hoặc   letan / letan123
-"""
+"""Chạy thử giao diện: đăng nhập -> cửa sổ chính."""
 from views.dang_nhap_view import DangNhapView
 from views.main_window import MainWindow
 
@@ -17,7 +12,7 @@ def chay():
             ket_qua["vai_tro"] = vai_tro
 
         DangNhapView(khi_thanh_cong=khi_thanh_cong).mainloop()
-        if not ket_qua:  # bấm Thoát ở màn hình đăng nhập
+        if not ket_qua:
             break
 
         cua_so = MainWindow(ket_qua["ten"], ket_qua["vai_tro"])

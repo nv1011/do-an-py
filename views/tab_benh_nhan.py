@@ -1,12 +1,4 @@
-"""Tab Bệnh nhân: tìm kiếm + bảng Treeview + form thông tin
-
-- BẮT BUỘC: họ tên, ngày sinh, giới tính, SĐT (đúng 10 chữ số), địa chỉ (số nhà, đường),
-  tỉnh/thành, phường/xã. (Mã bệnh nhân do hệ thống tạo: 14 chữ số, 8 số đầu là ngày.)
-- KHÔNG BẮT BUỘC: mã BHYT (để trống thì lưu "Không có"), email (chỉ kiểm tra khi có nhập),
-  nhóm máu, tiền sử bệnh.
-
-Hiện dùng DỮ LIỆU GIẢ lưu trong `self.du_lieu`
-"""
+"""Tab Bệnh nhân: tìm kiếm, bảng và form thông tin."""
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date
@@ -15,7 +7,6 @@ import config
 from views import helpers
 from views.widgets.date_picker import DatePicker
 
-# khóa, tiêu đề cột, độ rộng
 CAC_COT = [
     ("ma", "Mã", 125),
     ("ho_ten", "Họ tên", 160),
@@ -31,6 +22,7 @@ DANH_SACH_GIOI_TINH = ["Nam", "Nữ", "Khác"]
 DANH_SACH_NHOM_MAU = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
 CHO_TINH, CHO_XA = "Chọn tỉnh/thành", "Chọn phường/xã"
 
+# NỐI C (Tuần 10): thay hai hằng số này bằng API provinces.open-api.vn của C
 DANH_SACH_TINH = ["Hà Nội", "Đà Nẵng", "TP.HCM", "Hải Phòng", "Cần Thơ"]
 PHUONG_XA_MAU = {
     "Hà Nội": ["Phường Hoàn Kiếm", "Phường Ba Đình", "Phường Cầu Giấy"],
@@ -40,43 +32,42 @@ PHUONG_XA_MAU = {
     "Cần Thơ": ["Phường Ninh Kiều", "Phường Cái Khế", "Phường An Hòa"],
 }
 
-# Dữ liệu giả. Mã bệnh nhân đúng định dạng: 14 chữ số, 8 số đầu là ngày.
+# Dữ liệu giả (NỐI A). Mã bệnh nhân đúng định dạng của A: 14 chữ số, 8 số đầu là ngày.
 KHOA_DU_LIEU = ("ma", "ho_ten", "ngay_sinh", "sdt", "bhyt", "tinh", "xa_phuong",
                 "dia_chi", "gioi_tinh", "email", "nhom_mau", "tien_su")
 DU_LIEU_GIA = [
-    ("05102026000001", "Nguyễn Văn An", "12/03/1990", "0912345678", "HN4010123456789", "Hà Nội",
+    ("05102026000001", "Nguyễn Văn An", "12/03/1990", "0912345678", "4010123456789", "Hà Nội",
      "Phường Hoàn Kiếm", "12 Hàng Bạc", "Nam", "an.nguyen@mail.com", "O+", ""),
-    ("05102026000002", "Trần Thị Bình", "25/07/1985", "0987654321", "DN4010987654321", "Đà Nẵng",
+    ("05102026000002", "Trần Thị Bình", "25/07/1985", "0987654321", "4010987654321", "Đà Nẵng",
      "Phường Hải Châu", "45 Bạch Đằng", "Nữ", "binh.tran@mail.com", "A+", "Viêm dạ dày"),
-    ("06102026000003", "Lê Minh Châu", "03/11/2001", "0901122334", "HC4011122233344", "TP.HCM",
+    ("06102026000003", "Lê Minh Châu", "03/11/2001", "0901122334", "4011122233344", "TP.HCM",
      "Phường Bến Nghé", "8 Lê Lợi", "Nữ", "chau.le@mail.com", "B+", ""),
-    ("07102026000004", "Phạm Quốc Dũng", "18/05/1978", "0934455667", "HP4015566778899", "Hải Phòng",
+    ("07102026000004", "Phạm Quốc Dũng", "18/05/1978", "0934455667", "4015566778899", "Hải Phòng",
      "Phường Ngô Quyền", "23 Lạch Tray", "Nam", "dung.pham@mail.com", "AB+", "Tiểu đường"),
-    ("08102026000005", "Hoàng Thu Hà", "30/09/1995", "0977788990", "CT4017788990011", "Cần Thơ",
+    ("08102026000005", "Hoàng Thu Hà", "30/09/1995", "0977788990", "4017788990011", "Cần Thơ",
      "Phường Ninh Kiều", "77 Hòa Bình", "Nữ", "ha.hoang@mail.com", "O-", ""),
-    ("09102026000006", "Vũ Đức Huy", "09/02/1969", "0966677889", "HN4016677889900", "Hà Nội",
+    ("09102026000006", "Vũ Đức Huy", "09/02/1969", "0966677889", "4016677889900", "Hà Nội",
      "Phường Ba Đình", "5 Đội Cấn", "Nam", "huy.vu@mail.com", "A-", "Cao huyết áp"),
-    ("12102026000007", "Đặng Mỹ Linh", "21/12/2003", "0955566778", "DN4015566778800", "Đà Nẵng",
+    ("12102026000007", "Đặng Mỹ Linh", "21/12/2003", "0955566778", "4015566778800", "Đà Nẵng",
      "Phường Sơn Trà", "19 Ngô Quyền", "Nữ", "", "B-", ""),
-    ("12102026000008", "Bùi Anh Khoa", "14/08/1999", "0944455667", "HC4014455667711", "TP.HCM",
+    ("12102026000008", "Bùi Anh Khoa", "14/08/1999", "0944455667", "4014455667711", "TP.HCM",
      "Phường Bến Thành", "102 Nguyễn Huệ", "Nam", "khoa.bui@mail.com", "O+", ""),
 ]
 
 
 class TabBenhNhan(ttk.Frame):
     def __init__(self, parent, thong_bao=None, vai_tro="admin"):
-        """thong_bao: hàm nhận 1 chuỗi để hiện lên thanh trạng thái (có thể bỏ trống).
-        vai_tro: "admin" dùng đủ chức năng; "le_tan" chỉ được tìm kiếm và xem."""
         super().__init__(parent)
         self.thong_bao = thong_bao or (lambda _s: None)
         self.vai_tro = vai_tro
-        self.cac_nut_sua_doi = []  # Thêm, Sửa, Xóa: le_tan không được dùng
+        self.cac_nut_sua_doi = []
 
+        # NỐI A (Tuần 10): thay bằng lay_tat_ca()
         self.du_lieu = [dict(zip(KHOA_DU_LIEU, dong)) for dong in DU_LIEU_GIA]
 
         self.var_tu_khoa = tk.StringVar()
         self.var_ho_ten = tk.StringVar()
-        self.var_gioi_tinh = tk.StringVar(value="")   # chưa chọn: bắt buộc phải chọn
+        self.var_gioi_tinh = tk.StringVar(value="")
         self.var_sdt = tk.StringVar()
         self.var_bhyt = tk.StringVar()
         self.var_email = tk.StringVar()
@@ -86,8 +77,8 @@ class TabBenhNhan(ttk.Frame):
         self._tao_thanh_tim_kiem()
         khung_chinh = ttk.Frame(self)
         khung_chinh.pack(fill="both", expand=True, padx=10, pady=(0, 10))
-        khung_chinh.columnconfigure(0, weight=1)  # bảng giãn theo cửa sổ
-        khung_chinh.columnconfigure(1, weight=0)  # form giữ độ rộng cố định
+        khung_chinh.columnconfigure(0, weight=1)
+        khung_chinh.columnconfigure(1, weight=0)
         khung_chinh.rowconfigure(0, weight=1)
         self._tao_bang(khung_chinh).grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         self._tao_form(khung_chinh).grid(row=0, column=1, sticky="ns")
@@ -130,7 +121,7 @@ class TabBenhNhan(ttk.Frame):
         return khung
 
     def _tao_form(self, cha):
-        form = ttk.LabelFrame(cha, text="Thông tin bệnh nhân *", padding=12)
+        form = ttk.LabelFrame(cha, text="Thông tin bệnh nhân (* là bắt buộc)", padding=12)
         form.columnconfigure(0, weight=1, uniform="cot")
         form.columnconfigure(1, weight=1, uniform="cot")
 
@@ -182,7 +173,7 @@ class TabBenhNhan(ttk.Frame):
         ttk.Entry(form, textvariable=self.var_tien_su).grid(
             row=15, column=0, columnspan=2, sticky="ew")
 
-        form.rowconfigure(16, weight=1)   # đẩy hàng nút xuống đáy form
+        form.rowconfigure(16, weight=1)
         khung_nut = ttk.Frame(form)
         khung_nut.grid(row=17, column=0, columnspan=2, sticky="ew", pady=(18, 0))
         for i, (chu, lenh) in enumerate([("Thêm", self.them), ("Sửa", self.sua),
@@ -209,9 +200,10 @@ class TabBenhNhan(ttk.Frame):
         self.cb_xa.set(CHO_XA)
 
     def _cap_nhat_xa(self, tinh):
+        # NỐI C (Tuần 10): lấy phường/xã của tỉnh từ API của C
         self.cb_xa["values"] = PHUONG_XA_MAU.get(tinh, [])
 
-    # ------------------------------------------------------ hiển thị
+    # ------------------------------------------------------------ hiển thị
     def hien_thi(self, danh_sach):
         self.tree.delete(*self.tree.get_children())
         for b in danh_sach:
@@ -245,6 +237,7 @@ class TabBenhNhan(ttk.Frame):
         return next((b for b in self.du_lieu if b["ma"] == ma), None)
 
     def _ma_moi(self):
+        """Mã 14 số: 8 số đầu là ngày hôm nay (ddmmyyyy) + 6 số thứ tự tiếp theo."""
         so_lon_nhat = max((int(b["ma"][8:]) for b in self.du_lieu), default=0)
         return f"{date.today():%d%m%Y}{so_lon_nhat + 1:06d}"
 
@@ -260,6 +253,7 @@ class TabBenhNhan(ttk.Frame):
         self.cb_xa.set(CHO_XA)
 
     def _doc_form(self):
+        """Kiểm tra form theo điều kiện của model (A). Trả về dict hoặc None nếu có lỗi."""
         def loi(noi_dung):
             messagebox.showwarning(config.TIEU_DE_APP, noi_dung, parent=self)
             return None
@@ -268,6 +262,7 @@ class TabBenhNhan(ttk.Frame):
         ngay_sinh = self.chon_ngay_sinh.get()
         gioi_tinh = self.var_gioi_tinh.get()
         sdt = self.var_sdt.get().strip()
+        bhyt = self.var_bhyt.get().strip()
         email = self.var_email.get().strip()
         dia_chi = self.var_dia_chi.get().strip()
 
@@ -279,6 +274,8 @@ class TabBenhNhan(ttk.Frame):
             return loi("Vui lòng chọn giới tính.")
         if not helpers.la_sdt_hop_le(sdt):
             return loi("Số điện thoại phải gồm đúng 10 chữ số.")
+        if bhyt and not helpers.la_bhyt_hop_le(bhyt):
+            return loi("Mã BHYT phải gồm đúng 13 chữ số (hoặc để trống).")
         if email and not helpers.la_email_hop_le(email):
             return loi("Email không hợp lệ.")
         if not dia_chi:
@@ -294,7 +291,7 @@ class TabBenhNhan(ttk.Frame):
             "gioi_tinh": gioi_tinh,
             "nhom_mau": self.cb_nhom_mau.get(),
             "sdt": sdt,
-            "bhyt": self.var_bhyt.get().strip() or "Không có",   # để trống thì "Không có"
+            "bhyt": bhyt or "Không có",
             "email": email,
             "dia_chi": dia_chi,
             "tinh": self.cb_tinh.get(),
@@ -304,11 +301,10 @@ class TabBenhNhan(ttk.Frame):
 
     # ------------------------------------------------------------ chức năng
     def tim(self):
-        """Tìm không cần chính xác: không phân biệt hoa/thường và dấu tiếng Việt.
-        Họ tên: mỗi từ khóa là phần đầu của một từ trong tên ('an', 'van an', 'nguyen van an').
-        Mã / SĐT / Mã BHYT: từ khóa nằm ở bất kỳ đâu."""
+        """Tìm không cần chính xác: không phân biệt hoa/thường và dấu tiếng Việt."""
         khoa = TIM_THEO[self.cb_tim_theo.get()]
         tu_khoa = self.var_tu_khoa.get()
+        # NỐI A (Tuần 10): thay bằng tim_kiem(...) nếu A đã làm tìm kiếm tương tự
         ket_qua = [b for b in self.du_lieu if helpers.khop(khoa, b[khoa], tu_khoa)]
         self.hien_thi(ket_qua)
         self.thong_bao(f"Tìm thấy {len(ket_qua)} bệnh nhân")
@@ -327,7 +323,7 @@ class TabBenhNhan(ttk.Frame):
         if not du_lieu_form:
             return
         du_lieu_form["ma"] = self._ma_moi()
-        self.du_lieu.append(du_lieu_form)  
+        self.du_lieu.append(du_lieu_form)  # NỐI A (Tuần 10): them(...)
         self.hien_thi(self.du_lieu)
         self.lam_moi_form()
         self.thong_bao(f"Đã thêm bệnh nhân {du_lieu_form['ma']}")
@@ -340,7 +336,7 @@ class TabBenhNhan(ttk.Frame):
         du_lieu_form = self._doc_form()
         if not du_lieu_form:
             return
-        self._tim_theo_ma(ma).update(du_lieu_form)  
+        self._tim_theo_ma(ma).update(du_lieu_form)  # NỐI A (Tuần 10)
         self.hien_thi(self.du_lieu)
         self.tree.selection_set(ma)
         self.thong_bao(f"Đã cập nhật bệnh nhân {ma}")
@@ -354,7 +350,7 @@ class TabBenhNhan(ttk.Frame):
         if not messagebox.askyesno(config.TIEU_DE_APP,
                                    f"Xóa bệnh nhân {ma} - {b['ho_ten']}?", parent=self):
             return
-        self.du_lieu.remove(b)  
+        self.du_lieu.remove(b)  # NỐI A (Tuần 10): xoa(ma)
         self.hien_thi(self.du_lieu)
         self.lam_moi_form()
         self.thong_bao(f"Đã xóa bệnh nhân {ma}")

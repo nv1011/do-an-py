@@ -1,6 +1,4 @@
-"""Thẻ lịch hẹn (AppointmentCard) dùng ở tab Lịch hẹn
-
-"""
+"""Thẻ lịch hẹn (Custom Widget)."""
 import tkinter as tk
 
 import config
@@ -16,7 +14,7 @@ class AppointmentCard(tk.Frame):
                  ma_benh_nhan, ten_bac_si, thoi_luong, khi_chon=None):
         super().__init__(parent, bg="white", width=CHIEU_RONG_THE, height=CHIEU_CAO_THE,
                          highlightthickness=1, highlightbackground=MAU_VIEN)
-        self.pack_propagate(False)   # giữ kích thước cố định để các thẻ đều nhau
+        self.pack_propagate(False)
         self.ma = ma
         self.khi_chon = khi_chon
 

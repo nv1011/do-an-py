@@ -1,11 +1,4 @@
-"""Bộ chọn ngày: 3 ô chọn theo thứ tự Năm / Tháng / Ngày
-
-Dùng cho ngày sinh và cho ngày khám/ngày lọc ở tab Lịch hẹn.
-- Tháng 4, 6, 9, 11 chỉ có 30 ngày; các tháng khác 31 ngày; tháng 2 có 28 ngày, năm nhuận 29 ngày.
-- Nếu đổi tháng/năm làm ngày đang chọn không còn hợp lệ (ví dụ 31 -> tháng 4) thì ngày
-  tự lùi về ngày cuối cùng của tháng đó.
-- Mặc định (ngày sinh): năm từ năm hiện tại xuống 1900 và không được chọn ngày ở tương lai.
-"""
+"""Bộ chọn ngày gồm 3 ô: Năm, Tháng, Ngày."""
 from tkinter import ttk
 from datetime import date, datetime
 
@@ -43,12 +36,15 @@ class DatePicker(ttk.Frame):
 
         self.clear()
 
+    # ------------------------------------------------------------ nội bộ
     @staticmethod
     def _doc(cb):
+        """Giá trị số đang chọn của ô, hoặc None nếu còn là chữ gợi ý."""
         gia_tri = cb.get()
         return int(gia_tri) if gia_tri.isdigit() else None
 
     def _cap_nhat_danh_sach(self):
+        """Tính lại danh sách tháng, ngày theo năm/tháng đang chọn."""
         nam, thang = self._doc(self.cb_nam), self._doc(self.cb_thang)
 
         thang_max = helpers.so_thang_toi_da(nam, gioi_han_hom_nay=self.gioi_han_hom_nay)
@@ -71,6 +67,7 @@ class DatePicker(ttk.Frame):
         if self.khi_doi:
             self.khi_doi()
 
+    # ------------------------------------------------------------ dùng bên ngoài
     def get(self):
         nam, thang, ngay = (self._doc(self.cb_nam), self._doc(self.cb_thang),
                             self._doc(self.cb_ngay))
@@ -79,6 +76,7 @@ class DatePicker(ttk.Frame):
         return f"{ngay:02d}/{thang:02d}/{nam}"
 
     def get_date(self):
+        """datetime.date, hoặc None nếu chưa chọn đủ / ngày không tồn tại."""
         chuoi = self.get()
         if not chuoi:
             return None
@@ -88,6 +86,7 @@ class DatePicker(ttk.Frame):
             return None
 
     def set(self, chuoi):
+        """Nhận 'dd/mm/yyyy'; chuỗi sai định dạng thì xóa trắng."""
         try:
             ngay, thang, nam = (int(p) for p in chuoi.split("/"))
         except ValueError:
@@ -95,7 +94,7 @@ class DatePicker(ttk.Frame):
             return
         self.cb_nam.set(str(nam))
         self.cb_thang.set(str(thang))
-        self._cap_nhat_danh_sach()   # cập nhật danh sách ngày trước khi đặt ngày
+        self._cap_nhat_danh_sach()
         self.cb_ngay.set(str(ngay))
 
     def set_date(self, ngay):
