@@ -1,4 +1,4 @@
-"""Tiện ích xác thực dữ liệu, bảo mật tài khoản và ngày tháng."""
+"""Tiện ích xác thực dữ liệu, bảo mật và tìm kiếm tiếng Việt."""
 import calendar
 import hashlib
 import re
@@ -81,3 +81,17 @@ def nam_tu_ma_bac_si(ma: str) -> int:
     if nam > date.today().year:   # năm ở tương lai thì thuộc thế kỷ trước
         nam -= 100
     return nam
+
+# ------------------------------------------------------------ Tiện ích bảo mật tài khoản (Salt & Hashing)
+
+def tao_salt() -> str:
+    """Tạo salt ngẫu nhiên 32 ký tự hex (16 bytes)."""
+    return secrets.token_hex(16)
+
+def bam_mat_khau(mat_khau: str, salt: str) -> str:
+    """Băm mật khẩu kết hợp salt bằng thuật toán SHA-256."""
+    return hashlib.sha256((mat_khau + salt).encode("utf-8")).hexdigest()
+
+def xac_thuc_mat_khau(mat_khau_nhap: str, salt: str, mat_khau_hash: str) -> bool:
+    """Xác thực mật khẩu người dùng nhập vào so với mã băm đã lưu."""
+    return bam_mat_khau(mat_khau_nhap, salt) == mat_khau_hash
