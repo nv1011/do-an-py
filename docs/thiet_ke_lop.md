@@ -217,7 +217,7 @@ Kế thừa từ `Nguoi`, quản lý thông tin hành chính và hồ sơ y tế
 | Thuộc tính | Kiểu Python | Kiểu JSON | Ràng buộc / Validation | Mô tả |
 | :--- | :--- | :--- | :--- | :--- |
 | *Thuộc tính kế thừa* | Xem lớp `Nguoi` | - | - | Các thuộc tính kế thừa từ `Nguoi` |
-| `_so_bhyt` | `str` | `string` | Regex `^[A-Z]{2}\d{13}$` hoặc `"Không có"` | Số thẻ bảo hiểm y tế |
+| `_so_bhyt` | `str` | `string` | Regex `^\d{13}$` hoặc `"Không có"` | Số thẻ bảo hiểm y tế |
 | `_tien_su_benh` | `str` | `string` | Chuỗi văn bản (Mặc định `"Không có"`) | Tiền sử bệnh án, dị ứng thuốc |
 | `_nhom_mau` | `str` | `string` | Thuộc: `"A"`, `"B"`, `"AB"`, `"O"`, `"Chưa rõ"` | Nhóm máu bệnh nhân |
 | `_email` | `str` | `string` | Regex email hợp lệ (hoặc rỗng) | Địa chỉ email để nhận thông báo |
@@ -384,6 +384,31 @@ Chi tiết hợp đồng hàm giữa Services và Views được quy định t�
 - **`QuanLyTaiKhoan` (`services/quan_ly_tai_khoan.py`)**: Xác thực đăng nhập bằng `utils.validators.xac_thuc_mat_khau`, đổi mật khẩu, phân quyền `admin` / `le_tan`.
 - **`ThongKe` (`services/thong_ke.py`)**: Thống kê doanh thu, số ca khám theo bác sĩ phục vụ vẽ biểu đồ Canvas, xuất file `.csv`.
 
+### 4.1. Quy chuẩn Giao tiếp Ngày tháng (View ↔ Service ↔ Model/JSON)
+- **View ↔ Service**: Giao diện gửi và nhận ngày tháng dưới dạng chuỗi chuẩn Việt Nam: **`DD-MM-YYYY`** (Ví dụ: `"25-07-1995"`).
+- **Service xử lý**: Chuyển đổi chuỗi `DD-MM-YYYY` sang kiểu `datetime.date`, kiểm tra tính hợp lệ bằng `utils.validators.la_ngay_hop_le` (xử lý chính xác năm nhuận, ngày 29/02, 30/02...). Nếu ngày không hợp lệ, trả về `(False, "Ngày tháng không hợp lệ!")`.
+- **Model / JSON Store**: Lưu trữ trong file JSON theo chuẩn ISO 8601: **`YYYY-MM-DD`** (để tương thích JSON Schema và sắp xếp chuỗi thời gian).
+
+### 4.2. Nguyên tắc Kiểm tra Dữ liệu (Validation Sharing)
+- Giao diện UI (Thành viên B) **import trực tiếp các hàm kiểm tra từ `utils/validators.py`** (`la_sdt_hop_le`, `la_ma_bhyt_hop_le`, `la_ngay_hop_le`, `la_email_hop_le`) để validate form ngay lúc nhập, tránh việc tự viết hoặc chép lại regex thủ công gây lệch chuẩn.
+- Tầng Model và Service vẫn là chốt chặn kiểm tra validation cuối cùng trước khi ghi vào dữ liệu.
+
+### 4.3. Bảng Ma trận Phân quyền Sử dụng Hệ thống
+Hệ thống áp dụng 2 vai trò: `admin` và `le_tan`. Lưu ý: **Phân quyền do tầng Giao diện (UI) chịu trách nhiệm thực thi** (ẩn các tab hoặc disable các nút bấm theo vai trò người dùng sau khi đăng nhập thành công).
+
+| Chức năng nghiệp vụ | `admin` | `le_tan` | Cơ chế UI & Ghi chú |
+| :--- | :---: | :---: | :--- |
+| Xem danh sách bệnh nhân, bác sĩ, lịch hẹn | ✓ | ✓ | Toàn quyền xem |
+| Thêm bệnh nhân mới (`them`) | ✓ | ✓ | Tiếp nhận hồ sơ ban đầu |
+| Đặt lịch hẹn, sửa lịch, hủy lịch hẹn | ✓ | ✓ | Phối hợp tiếp nhận và điều phối |
+| Sửa thông tin, Xóa hồ sơ bệnh nhân (`sua`, `xoa`) | ✓ | ✗ | UI disable / ẩn nút Sửa và Xóa |
+| Quản lý đội ngũ bác sĩ (`QuanLyBacSi`) | ✓ | ✗ | UI ẩn chức năng quản lý nhân sự |
+| Quản lý tài khoản hệ thống (`QuanLyTaiKhoan`) | ✓ | ✗ | UI ẩn tab Quản trị tài khoản |
+| Tạo phiếu khám ban đầu (`tao_phieu_kham`), Thêm dịch vụ | ✓ | ✓ | Lễ tân lập phiếu tiếp đón ban đầu |
+| Thu ngân thanh toán viện phí (`thanh_toan`) | ✓ | ✓ | Lễ tân thu tiền và in hóa đơn |
+| **Hoàn tất khám bệnh (`hoan_tat_kham`)** | **✓** | **✗** | **Lễ tân không có quyền** (Chỉ admin / bác sĩ chuyên môn mới được chẩn đoán và kê đơn) |
+| Tab Thống kê doanh thu, lượt khám & Xuất báo cáo | ✓ | ✗ | UI ẩn hoàn toàn Tab Thống kê |
+
 ---
 
 ## 5. ĐẶC TẢ JSON SCHEMA CHO CÁC TẬP TIN DỮ LIỆU (DATA LAYER)
@@ -439,7 +464,7 @@ Toàn bộ các file trong thư mục `data/` tuân thủ JSON Schema chuẩn sa
       },
       "gioi_tinh": {
         "type": "string",
-        "enum": ["Nam", "Nữ"]
+        "enum": ["Nam", "Nữ", "Khác"]
       },
       "ngay_sinh": {
         "type": "string",
@@ -451,7 +476,9 @@ Toàn bộ các file trong thư mục `data/` tuân thủ JSON Schema chuẩn sa
         "description": "Số điện thoại di động 10 số bắt đầu bằng 0"
       },
       "so_bhyt": {
-        "type": "string"
+        "type": "string",
+        "pattern": "^(\\d{13}|Không có)$",
+        "description": "Số thẻ BHYT gồm đúng 13 chữ số hoặc 'Không có'"
       },
       "tien_su_benh": {
         "type": "string"
@@ -480,7 +507,7 @@ Toàn bộ các file trong thư mục `data/` tuân thủ JSON Schema chuẩn sa
     "gioi_tinh": "Nam",
     "ngay_sinh": "1990-03-12",
     "sdt": "0912345678",
-    "so_bhyt": "HN4010123456789",
+    "so_bhyt": "4010123456789",
     "tien_su_benh": "Viêm loét dạ dày",
     "nhom_mau": "O",
     "email": "nguyenvanan@gmail.com"
@@ -494,7 +521,7 @@ Toàn bộ các file trong thư mục `data/` tuân thủ JSON Schema chuẩn sa
     "gioi_tinh": "Nữ",
     "ngay_sinh": "1985-07-25",
     "sdt": "0987654321",
-    "so_bhyt": "DN4010987654321",
+    "so_bhyt": "4010987654321",
     "tien_su_benh": "Tăng huyết áp nhẹ",
     "nhom_mau": "A",
     "email": "binh.tran@mail.com"
@@ -540,7 +567,7 @@ Toàn bộ các file trong thư mục `data/` tuân thủ JSON Schema chuẩn sa
       "dia_chi": { "type": "string" },
       "tinh_thanh": { "type": "string" },
       "xa_phuong": { "type": "string" },
-      "gioi_tinh": { "type": "string", "enum": ["Nam", "Nữ"] },
+      "gioi_tinh": { "type": "string", "enum": ["Nam", "Nữ", "Khác"] },
       "ngay_sinh": { "type": "string", "format": "date" },
       "sdt": { "type": "string", "pattern": "^0\\d{9}$" },
       "lich_lam_viec": {
@@ -922,7 +949,7 @@ Toàn bộ các file trong thư mục `data/` tuân thủ JSON Schema chuẩn sa
 | Thực thể | File Mã nguồn | Khóa chính (PK) | Khóa ngoại (FK) | Lưu trữ JSON | Ghi chú tích hợp |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `Nguoi` | `models/nguoi.py` | `_ma_dinh_danh` | Không | Không trực tiếp | Lớp cha trừu tượng (`ABC`) |
-| `BenhNhan` | `models/benh_nhan.py` | `_ma_dinh_danh` | Không | `data/benh_nhan.json` | 14 số, validate BHYT & SĐT |
+| `BenhNhan` | `models/benh_nhan.py` | `_ma_dinh_danh` | Không | `data/benh_nhan.json` | 13 số, validate BHYT & SĐT |
 | `BacSi` | `models/bac_si.py` | `_ma_dinh_danh` | `ma_chuyen_khoa` (trong mã) | `data/bac_si.json` | 9 số, lịch trực dạng list ca |
 | `ChuyenKhoa` | `models/chuyen_khoa.py` | `ma_chuyen_khoa` | Không | `data/chuyen_khoa.json` | 2 chữ số |
 | `DichVu` | `models/dich_vu.py` | `ma_dich_vu` | `ma_chuyen_khoa` | `data/dich_vu.json` | Tiền tố `DV` |
