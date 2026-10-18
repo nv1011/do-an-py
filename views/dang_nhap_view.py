@@ -1,15 +1,15 @@
-"""Màn hình đăng nhập
+"""Màn hình đăng nhập (Member B, Tuần 9), bám theo wireframe 01_dang_nhap.png.
 
-Cửa sổ này chỉ lo giao diện. Việc kiểm tra tài khoản do hàm `xac_thuc` đảm bảo:
+Cửa sổ này CHỈ lo giao diện. Việc kiểm tra tài khoản do hàm `xac_thuc` đảm bảo:
     xac_thuc(ten_dang_nhap, mat_khau) -> tên vai trò ("admin", "le_tan") hoặc None nếu sai.
-Hiện dùng hàm giả `xac_thuc_gia`
+Hiện dùng hàm giả `xac_thuc_gia`; Tuần 10 thay bằng hàm thật của A.
 """
 import tkinter as tk
 from tkinter import ttk
 
 import config
 
-# Tài khoản giả để thử giao diện
+# Tài khoản giả để thử giao diện (sẽ bỏ khi nối với A)
 TAI_KHOAN_GIA = {
     "admin": ("admin123", "admin"),
     "letan": ("letan123", "le_tan"),
@@ -46,6 +46,8 @@ class DangNhapView(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.thoat)
 
     def _tao_giao_dien(self):
+        # Thẻ đăng nhập đặt giữa cửa sổ (place chỉ dùng cho thẻ này;
+        # bên trong thẻ chỉ dùng pack)
         the = tk.Frame(self, bg="white", highlightbackground="#444444", highlightthickness=1)
         the.place(relx=0.5, rely=0.5, anchor="center", width=380, height=440)
 

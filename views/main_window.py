@@ -1,7 +1,5 @@
 """Cửa sổ chính: Menu + Notebook + thanh trạng thái
 
-Mỗi tab là một ttk.Frame lưu trong `self.tabs[tên_tab]`. View của tab được tạo
-với parent là frame đó rồi pack() trong chính frame đó.
 Chạy thử bằng chay_thu_gui.py ở thư mục gốc phong_kham/.
 """
 import tkinter as tk
@@ -9,6 +7,7 @@ from tkinter import ttk, messagebox
 
 import config
 from views.tab_benh_nhan import TabBenhNhan
+from views.tab_lich_hen import TabLichHen
 
 
 class MainWindow(tk.Tk):
@@ -24,7 +23,7 @@ class MainWindow(tk.Tk):
         self.configure(bg=config.MAU_NEN)
         self.option_add("*Font", config.FONT_CHUNG)
 
-        self.tabs = {}  # tên tab -> ttk.Frame, để các view gắn vào sau
+        self.tabs = {} # tên tab -> ttk.Frame, để các view gắn vào sau
         self.trang_thai = tk.StringVar(value=f"Đăng nhập: {ten_dang_nhap} ({vai_tro})")
 
         self._tao_menu()
@@ -33,7 +32,7 @@ class MainWindow(tk.Tk):
 
         self.protocol("WM_DELETE_WINDOW", self.thoat)
 
-    # ---------- Menu ----------
+    # ---------- Menu ------------
     def _tao_menu(self):
         thanh_menu = tk.Menu(self)
 
@@ -53,7 +52,7 @@ class MainWindow(tk.Tk):
 
         self.config(menu=thanh_menu)
 
-    # ------------- Notebook -----------
+    # --------------- Notebook -------------
     def _tao_notebook(self):
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(fill="both", expand=True, padx=8, pady=(8, 0))
@@ -67,17 +66,20 @@ class MainWindow(tk.Tk):
         TabBenhNhan(self.tabs["Bệnh nhân"], thong_bao=self.trang_thai.set,
                    vai_tro=self.vai_tro).pack(fill="both", expand=True)
 
-        # Các tab chưa làm
-        for ten in ("Lịch hẹn", "Phiếu khám", "Thống kê"):
+        TabLichHen(self.tabs["Lịch hẹn"], thong_bao=self.trang_thai.set,
+                   vai_tro=self.vai_tro).pack(fill="both", expand=True)
+
+        # Các tab chưa làm: khung giữ chỗ
+        for ten in ("Phiếu khám", "Thống kê"):
             ttk.Label(self.tabs[ten], text=f"Tab {ten} (đang phát triển)").pack(expand=True)
 
-    # ------------ Thanh trạng thái -----------
+    # ------------- Thanh trạng thái -------------
     def _tao_thanh_trang_thai(self):
         ttk.Label(
             self, textvariable=self.trang_thai, relief="sunken", anchor="w", padding=(8, 3)
         ).pack(side="bottom", fill="x")
 
-    # ---------- Lệnh -----------
+    # ----------- Lệnh ------------
     def _chua_co(self):
         messagebox.showinfo(config.TIEU_DE_APP, "Chức năng này chưa có.", parent=self)
 

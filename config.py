@@ -3,8 +3,8 @@
 TIEU_DE_APP = "Quản lý phòng khám"
 
 # Cửa sổ chính
-KICH_THUOC_CUA_SO = "1100x680"
-KICH_THUOC_TOI_THIEU = (900, 560)
+KICH_THUOC_CUA_SO = "1150x720"
+KICH_THUOC_TOI_THIEU = (950, 620)
 
 # Font
 FONT_CHUNG = ("Segoe UI", 10)
@@ -17,3 +17,5 @@ MAU_LOI = "#c0392b"
 
 # Thứ tự các tab trong Notebook
 DANH_SACH_TAB = ["Bệnh nhân", "Lịch hẹn", "Phiếu khám", "Thống kê"]
+
+hoc_vi = { "01": "TS", "02": "ThS", "03": "BS" }
