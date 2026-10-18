@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
 from datetime import date
+from utils.validators import la_sdt_hop_le
 
 class Nguoi(ABC):
-    def __init__(self,ma_dinh_danh, ho_ten, dia_chi, tinh_thanh, xa_phuong, gioi_tinh, ngay_sinh, sdt):
-        self._ma_dinh_danh=ma_dinh_danh
-        self.ho_ten=ho_ten
-        self._gioi_tinh=gioi_tinh
-        self._ngay_sinh=ngay_sinh
-        self._dia_chi=dia_chi
+    def __init__(self, ma_dinh_danh, ho_ten, dia_chi, tinh_thanh, xa_phuong, gioi_tinh, ngay_sinh, sdt):
+        self._ma_dinh_danh = ma_dinh_danh
+        self.ho_ten = ho_ten
+        self.gioi_tinh = gioi_tinh
+        self._ngay_sinh = ngay_sinh
+        self._dia_chi = dia_chi
         self._tinh_thanh = tinh_thanh
         self._xa_phuong = xa_phuong
-        self.sdt=sdt
-
+        self.sdt = sdt
 
     @property
     def tinh_thanh(self):
@@ -45,6 +45,12 @@ class Nguoi(ABC):
     def gioi_tinh(self):
         return self._gioi_tinh
 
+    @gioi_tinh.setter
+    def gioi_tinh(self, value):
+        if value not in ("Nam", "Nữ", "Khác"):
+            raise ValueError("Giới tính không hợp lệ!")
+        self._gioi_tinh = value
+
     @property
     def tuoi(self):
         hom_nay = date.today()
@@ -67,9 +73,9 @@ class Nguoi(ABC):
 
     @sdt.setter
     def sdt(self, value):   
-        if not (value.isdigit() and len(value) == 10):
-            raise ValueError("SĐT không hợp lệ")
-        self._sdt = value
+        if not la_sdt_hop_le(value):
+            raise ValueError("SĐT không hợp lệ (phải gồm đúng 10 số và bắt đầu bằng số 0)!")
+        self._sdt = str(value).strip()
 
     @abstractmethod
     def to_dict(self):
