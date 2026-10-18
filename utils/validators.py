@@ -46,11 +46,11 @@ def la_sdt_hop_le(sdt) -> bool:
     return bool(re.fullmatch(r"0\d{9}", str(sdt).strip()))
 
 def la_ma_bhyt_hop_le(so_bhyt) -> bool:
-    """Số thẻ BHYT hợp lệ theo chuẩn Việt Nam (2 chữ cái + 13 chữ số) hoặc 'Không có'."""
+    """Số thẻ BHYT hợp lệ: đúng 13 chữ số hoặc 'Không có'."""
     val = (so_bhyt or "").strip()
     if not val or val == "Không có":
         return True
-    return bool(re.fullmatch(r"[A-Z]{2}\d{13}", val))
+    return bool(re.fullmatch(r"\d{13}", val))
 
 def la_ma_benh_nhan_hop_le(ma) -> bool:
     """Mã gồm đúng 14 chữ số và 8 số đầu là ngày đăng ký hợp lệ."""
