@@ -1,0 +1,18 @@
+[
+  {
+    "ten_dang_nhap": "admin",
+    "mat_khau_hash": "0f20fb336de567e7069f3c5b0208052f5a50fb1ce95275e2671dc8c411e21f28",
+    "salt": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+    "vai_tro": "admin",
+    "trang_thai": true,
+    "ngay_tao": "2026-10-01"
+  },
+  {
+    "ten_dang_nhap": "letan",
+    "mat_khau_hash": "b77120f022c2f09fcc575df436378256e471d42cec5240b3e9858444558af422",
+    "salt": "f0e1d2c3b4a5968778695a4b3c2d1e0f",
+    "vai_tro": "le_tan",
+    "trang_thai": true,
+    "ngay_tao": "2026-10-01"
+  }
+]

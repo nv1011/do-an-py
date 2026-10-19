@@ -1,0 +1,72 @@
+[
+  {
+    "ma_phieu_kham": "PK001",
+    "ma_lich_hen": "LH001",
+    "ma_benh_nhan": "12102026000002",
+    "ma_bac_si": "010120001",
+    "ngay_kham": "2026-10-12",
+    "trieu_chung": "Chóng mặt khi thay đổi tư thế, huyết áp đo 140/90",
+    "chan_doan": "Tăng huyết áp vô căn độ 1",
+    "danh_sach_dich_vu": [
+      {
+        "ma_dich_vu": "DV001",
+        "ten_dich_vu": "Khám lâm sàng nội khoa",
+        "don_gia": 150000,
+        "so_luong": 1
+      }
+    ],
+    "don_thuoc": [
+      {
+        "ten_thuoc": "Amlodipine 5mg",
+        "don_vi": "Viên",
+        "so_luong": 30,
+        "cach_dung": "Uống 1 viên vào buổi sáng sau ăn"
+      }
+    ],
+    "loi_dan": "Ăn giảm muối, hạn chế căng thẳng, đo huyết áp mỗi sáng",
+    "ngay_tai_kham": "2026-11-12",
+    "trang_thai_kham": "Hoan_thanh",
+    "trang_thai_thanh_toan": "Da_thanh_toan"
+  },
+  {
+    "ma_phieu_kham": "PK002",
+    "ma_lich_hen": "LH002",
+    "ma_benh_nhan": "12102026000003",
+    "ma_bac_si": "010120001",
+    "ngay_kham": "2026-10-12",
+    "trieu_chung": "Ợ chua, đau âm ỉ vùng thượng vị",
+    "chan_doan": "Viêm loét dạ dày tá tràng",
+    "danh_sach_dich_vu": [
+      {
+        "ma_dich_vu": "DV001",
+        "ten_dich_vu": "Khám lâm sàng nội khoa",
+        "don_gia": 150000,
+        "so_luong": 1
+      },
+      {
+        "ma_dich_vu": "DV003",
+        "ten_dich_vu": "Siêu âm bụng tổng quát",
+        "don_gia": 200000,
+        "so_luong": 1
+      }
+    ],
+    "don_thuoc": [
+      {
+        "ten_thuoc": "Esomeprazole 40mg",
+        "don_vi": "Viên",
+        "so_luong": 28,
+        "cach_dung": "Uống 1 viên trước ăn sáng 30 phút"
+      },
+      {
+        "ten_thuoc": "Gaviscon",
+        "don_vi": "Gói",
+        "so_luong": 20,
+        "cach_dung": "Uống 1 gói sau các bữa ăn chính khi đau"
+      }
+    ],
+    "loi_dan": "Kiêng đồ cay nóng, không uống rượu bia và cà phê",
+    "ngay_tai_kham": "2026-10-26",
+    "trang_thai_kham": "Hoan_thanh",
+    "trang_thai_thanh_toan": "Da_thanh_toan"
+  }
+]

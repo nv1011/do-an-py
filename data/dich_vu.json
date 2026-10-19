@@ -1,0 +1,44 @@
+[
+  {
+    "ma_dich_vu": "DV001",
+    "ten_dich_vu": "Khám lâm sàng nội khoa",
+    "ma_chuyen_khoa": "01",
+    "don_gia": 150000,
+    "mo_ta": "Khám và tư vấn sức khỏe tổng quát với bác sĩ chuyên khoa"
+  },
+  {
+    "ma_dich_vu": "DV002",
+    "ten_dich_vu": "Nội soi Tai Mũi Họng",
+    "ma_chuyen_khoa": "04",
+    "don_gia": 250000,
+    "mo_ta": "Nội soi ống mềm không đau chất lượng cao"
+  },
+  {
+    "ma_dich_vu": "DV003",
+    "ten_dich_vu": "Siêu âm bụng tổng quát",
+    "ma_chuyen_khoa": "01",
+    "don_gia": 200000,
+    "mo_ta": "Kiểm tra gan, mật, tụy, lách, thận, bàng quang"
+  },
+  {
+    "ma_dich_vu": "DV004",
+    "ten_dich_vu": "Khám chuyên khoa Nhi",
+    "ma_chuyen_khoa": "02",
+    "don_gia": 150000,
+    "mo_ta": "Khám bệnh tổng quát cho trẻ em"
+  },
+  {
+    "ma_dich_vu": "DV005",
+    "ten_dich_vu": "Lấy cao răng siêu âm",
+    "ma_chuyen_khoa": "03",
+    "don_gia": 180000,
+    "mo_ta": "Vệ sinh răng miệng và lấy vôi răng"
+  },
+  {
+    "ma_dich_vu": "DV006",
+    "ten_dich_vu": "Đo khúc xạ và khám mắt",
+    "ma_chuyen_khoa": "05",
+    "don_gia": 120000,
+    "mo_ta": "Kiểm tra thị lực và đo độ cận/loạn"
+  }
+]
