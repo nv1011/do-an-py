@@ -22,7 +22,7 @@ CAC_THOI_LUONG = ["15", "30", "45", "60", "90", "120"]
 CHO_BENH_NHAN, CHO_BAC_SI, CHO_GIO, CHO_THOI_LUONG = (
     "Chọn bệnh nhân", "Chọn bác sĩ", "Chọn giờ", "Chọn thời lượng")
 
-VAI_TRO_DUOC_HUY = ("admin",)
+VAI_TRO_DUOC_HUY = ("admin", "le_tan")
 
 # Dữ liệu giả (NỐI A: lấy từ quản lý bệnh nhân / bác sĩ)
 DU_LIEU_BENH_NHAN_GIA = [
@@ -225,7 +225,7 @@ class TabLichHen(ttk.Frame):
         return form
 
     def ap_dung_phan_quyen(self):
-        """Chỉ admin được hủy lịch; lễ tân vẫn đặt lịch, lọc, xem."""
+        """Admin và lễ tân đều được hủy lịch."""
         if self.vai_tro not in VAI_TRO_DUOC_HUY:
             self.nut_huy.state(["disabled"])
 

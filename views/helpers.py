@@ -1,6 +1,5 @@
 """Hàm xử lý không dùng tkinter: tìm kiếm, ngày, giờ, kiểm tra dữ liệu."""
 import calendar
-import re
 import unicodedata
 from datetime import date
 
@@ -40,21 +39,6 @@ def khop(khoa, gia_tri, tu_khoa):
 
 
 # ------------------------------------------------------------ kiểm tra dữ liệu nhập
-def la_sdt_hop_le(sdt):
-    """Giống điều kiện của model: chuỗi chỉ gồm chữ số và đúng 10 chữ số."""
-    return len(sdt) == 10 and sdt.isascii() and sdt.isdigit()
-
-
-def la_bhyt_hop_le(ma):
-    """Theo thống nhất với A: mã BHYT gồm đúng 13 chữ số (chỉ kiểm tra khi có nhập)."""
-    return re.fullmatch(r"[0-9]{13}", ma) is not None
-
-
-def la_email_hop_le(email):
-    """Dạng đơn giản: ten@ten-mien.duoi, không có khoảng trắng."""
-    return re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email) is not None
-
-
 def dinh_dang_tien(so):
     """150000 -> '150.000 đ'."""
     return f"{so:,}".replace(",", ".") + " đ"

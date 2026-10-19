@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 import config
+from services.quan_ly_benh_nhan import QuanLyBenhNhan
 from views.tab_benh_nhan import TabBenhNhan
 from views.tai_khoan_dialog import DialogDoiMatKhau
 from views.tab_lich_hen import TabLichHen
@@ -58,12 +59,15 @@ class MainWindow(tk.Tk):
         self.notebook.pack(fill="both", expand=True, padx=8, pady=(8, 0))
 
         for ten in config.DANH_SACH_TAB:
+            if ten == "Thống kê" and self.vai_tro != "admin":
+                continue   # lễ tân không xem thống kê
             frame = ttk.Frame(self.notebook)
             self.notebook.add(frame, text=ten)
             self.tabs[ten] = frame
 
+        self.ql_benh_nhan = QuanLyBenhNhan()
         TabBenhNhan(self.tabs["Bệnh nhân"], thong_bao=self.trang_thai.set,
-                   vai_tro=self.vai_tro).pack(fill="both", expand=True)
+                   vai_tro=self.vai_tro, quan_ly=self.ql_benh_nhan).pack(fill="both", expand=True)
 
         TabLichHen(self.tabs["Lịch hẹn"], thong_bao=self.trang_thai.set,
                    vai_tro=self.vai_tro).pack(fill="both", expand=True)
@@ -71,7 +75,8 @@ class MainWindow(tk.Tk):
         TabPhieuKham(self.tabs["Phiếu khám"], thong_bao=self.trang_thai.set,
                      vai_tro=self.vai_tro).pack(fill="both", expand=True)
 
-        ttk.Label(self.tabs["Thống kê"], text="Tab Thống kê (đang phát triển)").pack(expand=True)
+        if "Thống kê" in self.tabs:
+            ttk.Label(self.tabs["Thống kê"], text="Tab Thống kê (đang phát triển)").pack(expand=True)
 
     # ---------- Thanh trạng thái ----------
     def _tao_thanh_trang_thai(self):
