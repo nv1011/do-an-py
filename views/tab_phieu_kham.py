@@ -1,380 +1,389 @@
-"""Tab Phiếu khám: danh sách phiếu và form lập phiếu."""
+"""Tab Phiếu khám: Đang khám -> Hoàn thành -> Thanh toán (theo docs/hop_dong_ham.md)."""
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date
 
 import config
 from views import helpers
-from views.tab_lich_hen import (DU_LIEU_BENH_NHAN_GIA, DU_LIEU_BAC_SI_GIA, _tao_lich_gia)
+from views.du_lieu_gia import QuanLyPhieuKhamGia, QuanLyBacSiGia
+from views.widgets.date_picker import DatePicker
+
+TAT_CA = "Tất cả"
+TRANG_THAI_KHAM = {"Dang_kham": "Đang khám", "Hoan_thanh": "Hoàn thành"}
+TRANG_THAI_TT = {"Chua_thanh_toan": "Chưa thanh toán", "Da_thanh_toan": "Đã thanh toán"}
+CAC_LOC = [TAT_CA, "Đang khám", "Chưa thanh toán", "Đã thanh toán"]
 
 CAC_COT = [
-    ("ma", "Mã phiếu", 75),
-    ("ngay", "Ngày khám", 90),
-    ("benh_nhan", "Bệnh nhân", 150),
-    ("bac_si", "Bác sĩ", 150),
-    ("chan_doan", "Chẩn đoán", 150),
-    ("tong_tien", "Tổng tiền", 100),
+    ("ma", "Mã phiếu", 80), ("ngay", "Ngày khám", 90), ("benh_nhan", "Bệnh nhân", 160),
+    ("bac_si", "Bác sĩ", 150), ("kham", "Khám", 90), ("thanh_toan", "Thanh toán", 110),
+    ("tien", "Tổng tiền", 90),
 ]
-TIM_THEO = {"Bệnh nhân": "benh_nhan", "Mã phiếu": "ma", "Chẩn đoán": "chan_doan"}
-CHO_LICH = "Chọn lịch hẹn"
 
-# NỐI A: danh mục dịch vụ (models/dich_vu.py của A) - tên và đơn giá
-DANH_SACH_DICH_VU = [
-    ("Khám tổng quát", 150000),
-    ("Xét nghiệm máu", 200000),
-    ("Siêu âm", 250000),
-    ("X-quang", 180000),
-    ("Điện tim", 120000),
-]
+
+def _tien(so):
+    return helpers.dinh_dang_tien(int(so))
+
+
+class DialogTaoPhieu(tk.Toplevel):
+    """Hộp thoại lập phiếu khám mới."""
+
+    def __init__(self, parent, ds_benh_nhan, ds_bac_si, khi_luu):
+        super().__init__(parent)
+        self.title("Tạo phiếu khám")
+        self.resizable(False, False)
+        self.transient(parent.winfo_toplevel())
+        self.khi_luu = khi_luu
+        self.ds_bn = {f"{b.ma_dinh_danh} - {b.ho_ten}": b.ma_dinh_danh for b in ds_benh_nhan}
+        self.ds_bs = {f"{b.ma_dinh_danh} - {b.hoc_vi}. {b.ho_ten}": b.ma_dinh_danh for b in ds_bac_si}
+
+        khung = ttk.Frame(self, padding=12)
+        khung.pack(fill="both", expand=True)
+        ttk.Label(khung, text="Bệnh nhân *").grid(row=0, column=0, sticky="w", pady=4)
+        self.cb_bn = ttk.Combobox(khung, values=list(self.ds_bn), state="readonly", width=40)
+        self.cb_bn.grid(row=0, column=1, pady=4)
+        ttk.Label(khung, text="Bác sĩ *").grid(row=1, column=0, sticky="w", pady=4)
+        self.cb_bs = ttk.Combobox(khung, values=list(self.ds_bs), state="readonly", width=40)
+        self.cb_bs.grid(row=1, column=1, pady=4)
+        ttk.Label(khung, text="Triệu chứng *").grid(row=2, column=0, sticky="nw", pady=4)
+        self.txt = tk.Text(khung, width=40, height=4)
+        self.txt.grid(row=2, column=1, pady=4)
+
+        nut = ttk.Frame(khung)
+        nut.grid(row=3, column=0, columnspan=2, pady=(8, 0))
+        ttk.Button(nut, text="Tạo phiếu", command=self._luu).pack(side="left", padx=4)
+        ttk.Button(nut, text="Hủy", command=self.destroy).pack(side="left", padx=4)
+        self.grab_set()
+
+    def _luu(self):
+        du_lieu = {
+            "ma_benh_nhan": self.ds_bn.get(self.cb_bn.get()),
+            "ma_bac_si": self.ds_bs.get(self.cb_bs.get()),
+            "trieu_chung": self.txt.get("1.0", "end").strip(),
+        }
+        if self.khi_luu(du_lieu):
+            self.destroy()
 
 
 class TabPhieuKham(ttk.Frame):
-    def __init__(self, parent, thong_bao=None, vai_tro="admin"):
+    def __init__(self, parent, thong_bao=None, vai_tro="admin", quan_ly=None,
+                 ql_benh_nhan=None, ql_bac_si=None):
         super().__init__(parent)
-        self.thong_bao = thong_bao or (lambda _s: None)
+        self.thong_bao = thong_bao or (lambda _m: None)
         self.vai_tro = vai_tro
-        self.cac_nut_sua_doi = []
+        self.ql = quan_ly or QuanLyPhieuKhamGia()      # NỐI A: QuanLyPhieuKham
+        self.ql_bn = ql_benh_nhan
+        self.ql_bs = ql_bac_si or QuanLyBacSiGia()     # NỐI A: QuanLyBacSi
+        self.ma_dang_chon = None
+        self.don_thuoc = []
+        self.dich_vu = {f"{d['ma_dich_vu']} - {d['ten_dich_vu']} - {_tien(d['don_gia'])}": d["ma_dich_vu"]
+                        for d in self.ql.lay_dich_vu()}
 
-        # NỐI A: lấy danh sách thật từ lớp quản lý bệnh nhân / bác sĩ / lịch hẹn
-        self.ten_benh_nhan = dict(DU_LIEU_BENH_NHAN_GIA)
-        self.ten_bac_si = {m: f"{self._hoc_vi(m)}. {t}" for m, t in DU_LIEU_BAC_SI_GIA}
-        self.ds_lich_hen = {l["ma"]: l for l in _tao_lich_gia()}
-        self.du_lieu = self._tao_phieu_gia()   # NỐI A: lay_tat_ca()
-
-        self.ma_dang_sua = None
-        self.lich_cho = []
-        self.var_tu_khoa = tk.StringVar()
-        self.var_chan_doan = tk.StringVar()
-        self.var_benh_nhan = tk.StringVar(value="-")
-        self.var_bac_si = tk.StringVar(value="-")
-        self.var_ngay = tk.StringVar(value="-")
-        self.var_tong = tk.StringVar(value=helpers.dinh_dang_tien(0))
-        self.var_dich_vu = {ten: tk.BooleanVar(value=False) for ten, _g in DANH_SACH_DICH_VU}
-
-        self._tao_thanh_tim_kiem()
-        khung_chinh = ttk.Frame(self)
-        khung_chinh.pack(fill="both", expand=True, padx=10, pady=(0, 10))
-        khung_chinh.columnconfigure(0, weight=1)
-        khung_chinh.columnconfigure(1, weight=0)
-        khung_chinh.rowconfigure(0, weight=1)
-        self._tao_bang(khung_chinh).grid(row=0, column=0, sticky="nsew", padx=(0, 10))
-        self._tao_form(khung_chinh).grid(row=0, column=1, sticky="ns")
-
-        self.hien_thi(self.du_lieu)
-        self._cap_nhat_ds_lich()
-        self.ap_dung_phan_quyen()
-
-    @staticmethod
-    def _hoc_vi(ma_bac_si):
-        return getattr(config, "hoc_vi", {}).get(ma_bac_si[:2], "BS")
-
-    def _tao_phieu_gia(self):
-        """Hai phiếu giả cho hai lịch hẹn đầu của hôm nay."""
-        mau = [
-            ("PK001", "LH001", "Viêm họng cấp", ["Khám tổng quát"], "Sốt nhẹ, đau họng 2 ngày",
-             "Paracetamol 500mg x 10 viên", "Uống nhiều nước ấm"),
-            ("PK002", "LH002", "Viêm dạ dày", ["Khám tổng quát", "Siêu âm"], "Đau thượng vị",
-             "Omeprazol 20mg x 14 viên", "Tránh đồ cay, tái khám sau 2 tuần"),
-        ]
-        ket_qua = []
-        for ma, ma_lich, chan_doan, dich_vu, trieu_chung, don_thuoc, loi_dan in mau:
-            lich = self.ds_lich_hen[ma_lich]
-            ket_qua.append({
-                "ma": ma, "ma_lich_hen": ma_lich, "ma_benh_nhan": lich["ma_benh_nhan"],
-                "ma_bac_si": lich["ma_bac_si"], "ngay": lich["ngay"],
-                "trieu_chung": trieu_chung, "chan_doan": chan_doan, "dich_vu": dich_vu,
-                "don_thuoc": don_thuoc, "loi_dan": loi_dan,
-                "tong_tien": self._tinh_tong(dich_vu),
-            })
-        return ket_qua
+        self._tao_loc()
+        self._tao_bang()
+        self._tao_chi_tiet()
+        self.lam_moi()
 
     # ------------------------------------------------------------ giao diện
-    def _tao_thanh_tim_kiem(self):
-        thanh = ttk.Frame(self)
-        thanh.pack(fill="x", padx=10, pady=10)
-        thanh.columnconfigure(2, weight=1)
+    def _tao_loc(self):
+        khung = ttk.Frame(self)
+        khung.pack(fill="x", padx=8, pady=(8, 4))
+        ttk.Label(khung, text="Tìm:").pack(side="left")
+        self.var_tim = tk.StringVar()
+        self.var_tim.trace_add("write", lambda *_: self._nap_bang())
+        ttk.Entry(khung, textvariable=self.var_tim, width=28).pack(side="left", padx=(4, 12))
+        ttk.Label(khung, text="Trạng thái:").pack(side="left")
+        self.cb_loc = ttk.Combobox(khung, values=CAC_LOC, state="readonly", width=16)
+        self.cb_loc.set(TAT_CA)
+        self.cb_loc.pack(side="left", padx=4)
+        self.cb_loc.bind("<<ComboboxSelected>>", lambda _e: self._nap_bang())
+        ttk.Button(khung, text="Tạo phiếu khám", command=self._mo_tao_phieu).pack(side="right")
 
-        ttk.Label(thanh, text="Tìm theo:").grid(row=0, column=0, padx=(0, 6))
-        self.cb_tim_theo = ttk.Combobox(thanh, values=list(TIM_THEO), state="readonly", width=12)
-        self.cb_tim_theo.current(0)
-        self.cb_tim_theo.grid(row=0, column=1, padx=(0, 8))
-        o_tim = ttk.Entry(thanh, textvariable=self.var_tu_khoa)
-        o_tim.grid(row=0, column=2, sticky="ew", padx=(0, 8))
-        o_tim.bind("<Return>", lambda _e: self.tim())
-        ttk.Button(thanh, text="Tìm", command=self.tim).grid(row=0, column=3, padx=(0, 8))
-        ttk.Button(thanh, text="Làm mới", command=self.lam_moi_danh_sach).grid(row=0, column=4)
-
-    def _tao_bang(self, cha):
-        khung = ttk.Frame(cha)
-        khung.rowconfigure(0, weight=1)
-        khung.columnconfigure(0, weight=1)
-
-        self.tree = ttk.Treeview(khung, columns=[c[0] for c in CAC_COT],
-                                 show="headings", selectmode="browse")
+    def _tao_bang(self):
+        khung = ttk.Frame(self)
+        khung.pack(fill="both", expand=True, padx=8)
+        self.bang = ttk.Treeview(khung, columns=[c[0] for c in CAC_COT], show="headings",
+                                 height=8, selectmode="browse")
         for khoa, tieu_de, rong in CAC_COT:
-            self.tree.heading(khoa, text=tieu_de)
-            self.tree.column(khoa, width=rong, minwidth=60, anchor="w")
-        thanh_cuon = ttk.Scrollbar(khung, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=thanh_cuon.set)
+            self.bang.heading(khoa, text=tieu_de)
+            self.bang.column(khoa, width=rong, anchor="e" if khoa == "tien" else "w")
+        thanh = ttk.Scrollbar(khung, orient="vertical", command=self.bang.yview)
+        self.bang.configure(yscrollcommand=thanh.set)
+        self.bang.pack(side="left", fill="both", expand=True)
+        thanh.pack(side="right", fill="y")
+        self.bang.bind("<<TreeviewSelect>>", self._khi_chon)
 
-        self.tree.grid(row=0, column=0, sticky="nsew")
-        thanh_cuon.grid(row=0, column=1, sticky="ns")
-        self.tree.bind("<<TreeviewSelect>>", self._khi_chon_dong)
-        return khung
+    def _tao_chi_tiet(self):
+        khung = ttk.LabelFrame(self, text="Chi tiết phiếu khám", padding=8)
+        khung.pack(fill="x", padx=8, pady=8)
+        khung.columnconfigure(0, weight=1, uniform="c")
+        khung.columnconfigure(1, weight=1, uniform="c")
 
-    def _tao_form(self, cha):
-        form = ttk.LabelFrame(cha, text="Phiếu khám (* là bắt buộc)", padding=12)
-        form.columnconfigure(0, weight=1)
+        # --- cột trái: dịch vụ + tiền
+        trai = ttk.Frame(khung)
+        trai.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+        self.var_thong_tin = tk.StringVar(value="Chọn một phiếu ở bảng trên")
+        ttk.Label(trai, textvariable=self.var_thong_tin, wraplength=420).pack(anchor="w")
+        ttk.Label(trai, text="Triệu chứng:").pack(anchor="w", pady=(4, 0))
+        self.var_trieu_chung = tk.StringVar()
+        ttk.Label(trai, textvariable=self.var_trieu_chung, wraplength=420).pack(anchor="w")
 
-        def nhan(text, row):
-            ttk.Label(form, text=text).grid(row=row, column=0, sticky="w", pady=(6, 0))
+        self.bang_dv = ttk.Treeview(trai, columns=("ten", "gia", "sl", "tt"), show="headings",
+                                    height=4, selectmode="browse")
+        for khoa, td, rong in (("ten", "Dịch vụ", 190), ("gia", "Đơn giá", 80),
+                               ("sl", "SL", 35), ("tt", "Thành tiền", 90)):
+            self.bang_dv.heading(khoa, text=td)
+            self.bang_dv.column(khoa, width=rong, anchor="w" if khoa == "ten" else "e")
+        self.bang_dv.pack(fill="x", pady=4)
 
-        nhan("Lịch hẹn *", 0)
-        self.cb_lich = ttk.Combobox(form, state="readonly", width=44)
-        self.cb_lich.grid(row=1, column=0, sticky="ew")
-        self.cb_lich.bind("<<ComboboxSelected>>", lambda _e: self._khi_chon_lich())
+        them = ttk.Frame(trai)
+        them.pack(fill="x")
+        self.cb_dv = ttk.Combobox(them, values=list(self.dich_vu), state="readonly", width=34)
+        self.cb_dv.pack(side="left")
+        self.sp_sl = ttk.Spinbox(them, from_=1, to=99, width=4)
+        self.sp_sl.set(1)
+        self.sp_sl.pack(side="left", padx=4)
+        self.nut_them_dv = ttk.Button(them, text="Thêm", width=6, command=self._them_dv)
+        self.nut_them_dv.pack(side="left")
+        self.nut_xoa_dv = ttk.Button(them, text="Bỏ", width=5, command=self._xoa_dv)
+        self.nut_xoa_dv.pack(side="left", padx=4)
 
-        khung_tt = ttk.Frame(form)
-        khung_tt.grid(row=2, column=0, sticky="ew", pady=(6, 0))
-        for i, (chu, bien) in enumerate([("Bệnh nhân:", self.var_benh_nhan),
-                                         ("Bác sĩ:", self.var_bac_si),
-                                         ("Ngày khám:", self.var_ngay)]):
-            ttk.Label(khung_tt, text=chu).grid(row=i, column=0, sticky="w", padx=(0, 8))
-            ttk.Label(khung_tt, textvariable=bien).grid(row=i, column=1, sticky="w")
+        self.var_tong = tk.StringVar(value="Tổng tiền: 0 đ")
+        ttk.Label(trai, textvariable=self.var_tong, font=config.FONT_TIEU_DE).pack(anchor="e", pady=4)
+        self.nut_thanh_toan = ttk.Button(trai, text="Thanh toán", command=self._thanh_toan)
+        self.nut_thanh_toan.pack(anchor="e")
 
-        nhan("Triệu chứng", 3)
-        self.o_trieu_chung = tk.Text(form, height=2, width=44, wrap="word")
-        self.o_trieu_chung.grid(row=4, column=0, sticky="ew")
+        # --- cột phải: chẩn đoán, đơn thuốc
+        phai = ttk.Frame(khung)
+        phai.grid(row=0, column=1, sticky="nsew")
+        ttk.Label(phai, text="Chẩn đoán *").pack(anchor="w")
+        self.ent_chan_doan = ttk.Entry(phai)
+        self.ent_chan_doan.pack(fill="x")
+        ttk.Label(phai, text="Lời dặn").pack(anchor="w", pady=(4, 0))
+        self.ent_loi_dan = ttk.Entry(phai)
+        self.ent_loi_dan.pack(fill="x")
 
-        nhan("Chẩn đoán *", 5)
-        ttk.Entry(form, textvariable=self.var_chan_doan).grid(row=6, column=0, sticky="ew")
+        self.bang_thuoc = ttk.Treeview(phai, columns=("ten", "dv", "sl", "cd"), show="headings",
+                                       height=3, selectmode="browse")
+        for khoa, td, rong in (("ten", "Tên thuốc", 130), ("dv", "Đơn vị", 50),
+                               ("sl", "SL", 35), ("cd", "Cách dùng", 140)):
+            self.bang_thuoc.heading(khoa, text=td)
+            self.bang_thuoc.column(khoa, width=rong, anchor="w")
+        self.bang_thuoc.pack(fill="x", pady=4)
 
-        nhan("Dịch vụ đã dùng * (tick để chọn)", 7)
-        khung_dv = ttk.Frame(form)
-        khung_dv.grid(row=8, column=0, sticky="ew")
-        for ten, gia in DANH_SACH_DICH_VU:
-            ttk.Checkbutton(khung_dv, text=f"{ten} - {helpers.dinh_dang_tien(gia)}",
-                            variable=self.var_dich_vu[ten],
-                            command=self._cap_nhat_tong).pack(anchor="w")
-        khung_tong = ttk.Frame(form)
-        khung_tong.grid(row=9, column=0, sticky="ew", pady=(4, 0))
-        ttk.Label(khung_tong, text="Tổng tiền:").pack(side="left")
-        ttk.Label(khung_tong, textvariable=self.var_tong,
-                  font=config.FONT_TIEU_DE).pack(side="left", padx=8)
+        nhap = ttk.Frame(phai)
+        nhap.pack(fill="x")
+        self.ent_thuoc = ttk.Entry(nhap, width=16)
+        self.ent_dv = ttk.Entry(nhap, width=6)
+        self.ent_sl = ttk.Entry(nhap, width=4)
+        self.ent_cd = ttk.Entry(nhap, width=16)
+        for o in (self.ent_thuoc, self.ent_dv, self.ent_sl, self.ent_cd):
+            o.pack(side="left", padx=(0, 4))
+        self.nut_them_thuoc = ttk.Button(nhap, text="Thêm", width=6, command=self._them_thuoc)
+        self.nut_them_thuoc.pack(side="left")
+        self.nut_xoa_thuoc = ttk.Button(nhap, text="Bỏ", width=5, command=self._xoa_thuoc)
+        self.nut_xoa_thuoc.pack(side="left", padx=4)
+        ttk.Label(phai, text="(Tên thuốc, đơn vị, số lượng, cách dùng)").pack(anchor="w")
 
-        nhan("Đơn thuốc", 10)
-        self.o_don_thuoc = tk.Text(form, height=3, width=44, wrap="word")
-        self.o_don_thuoc.grid(row=11, column=0, sticky="ew")
+        tk_ = ttk.Frame(phai)
+        tk_.pack(fill="x", pady=4)
+        ttk.Label(tk_, text="Tái khám:").pack(side="left")
+        self.dp_tai_kham = DatePicker(tk_, nam_nho_nhat=date.today().year,
+                                      nam_lon_nhat=date.today().year + 2, nam_tang_dan=True,
+                                      gioi_han_hom_nay=False)
+        self.dp_tai_kham.pack(side="left", padx=4)
+        self.nut_hoan_tat = ttk.Button(phai, text="Hoàn tất khám", command=self._hoan_tat)
+        self.nut_hoan_tat.pack(anchor="e")
 
-        nhan("Lời dặn", 12)
-        self.o_loi_dan = tk.Text(form, height=2, width=44, wrap="word")
-        self.o_loi_dan.grid(row=13, column=0, sticky="ew")
+        self._dat_trang_thai()
 
-        form.rowconfigure(14, weight=1)
-        khung_nut = ttk.Frame(form)
-        khung_nut.grid(row=15, column=0, sticky="ew", pady=(14, 0))
-        for i, (chu, lenh) in enumerate([("Lưu phiếu", self.them), ("Sửa", self.sua),
-                                         ("Xóa", self.xoa), ("Làm mới", self.lam_moi_form)]):
-            khung_nut.columnconfigure(i, weight=1, uniform="nut")
-            nut = ttk.Button(khung_nut, text=chu, command=lenh)
-            nut.grid(row=0, column=i, sticky="ew", padx=2)
-            if chu != "Làm mới":
-                self.cac_nut_sua_doi.append(nut)
-        return form
-
-    def ap_dung_phan_quyen(self):
-        """Khóa các nút Lưu/Sửa/Xóa nếu không phải admin."""
-        if self.vai_tro != "admin":
-            for nut in self.cac_nut_sua_doi:
-                nut.state(["disabled"])
-
-    # ------------------------------------------------------------ hỗ trợ
-    @staticmethod
-    def _tinh_tong(ds_dich_vu):
-        gia = dict(DANH_SACH_DICH_VU)
-        return sum(gia[ten] for ten in ds_dich_vu)
-
-    def _dich_vu_da_chon(self):
-        return [ten for ten, _g in DANH_SACH_DICH_VU if self.var_dich_vu[ten].get()]
-
-    def _cap_nhat_tong(self):
-        self.var_tong.set(helpers.dinh_dang_tien(self._tinh_tong(self._dich_vu_da_chon())))
-
-    @staticmethod
-    def _lay_text(o):
-        return o.get("1.0", "end").strip()
-
-    @staticmethod
-    def _dat_text(o, noi_dung):
-        o.delete("1.0", "end")
-        o.insert("1.0", noi_dung)
-
-    def _ma_dang_chon(self):
-        chon = self.tree.selection()
-        return chon[0] if chon else None
-
-    def _tim_theo_ma(self, ma):
-        return next((p for p in self.du_lieu if p["ma"] == ma), None)
-
-    def _ma_moi(self):
-        so_lon_nhat = max((int(p["ma"][2:]) for p in self.du_lieu), default=0)
-        return f"PK{so_lon_nhat + 1:03d}"
-
-    def _nhan_lich(self, lich):
-        ten = self.ten_benh_nhan[lich["ma_benh_nhan"]]
-        return f"{lich['ma']} - {ten} - {lich['gio']} ({lich['ngay']:%d/%m/%Y})"
-
-    def _cap_nhat_ds_lich(self):
-        """Ô chọn lịch hẹn chỉ liệt kê lịch đã tới ngày khám và chưa có phiếu."""
-        da_co = {p["ma_lich_hen"] for p in self.du_lieu}
-        hom_nay = date.today()
-        self.lich_cho = sorted(
-            (l for l in self.ds_lich_hen.values()
-             if l["ma"] not in da_co and l["ngay"] <= hom_nay),
-            key=lambda l: (l["ngay"], l["gio"]))
-        self.cb_lich["values"] = [self._nhan_lich(l) for l in self.lich_cho]
-        self.cb_lich.set(CHO_LICH)
-
-    def _hien_thong_tin_lich(self, lich):
-        if lich:
-            self.var_benh_nhan.set(f"{self.ten_benh_nhan[lich['ma_benh_nhan']]} ({lich['ma_benh_nhan']})")
-            self.var_bac_si.set(self.ten_bac_si[lich["ma_bac_si"]])
-            self.var_ngay.set(f"{lich['ngay']:%d/%m/%Y}")
+    # ------------------------------------------------------------ dữ liệu bảng
+    def lam_moi(self):
+        """Nạp lại bảng, giữ phiếu đang chọn."""
+        self._nap_bang()
+        if self.ma_dang_chon and self.bang.exists(self.ma_dang_chon):
+            self.bang.selection_set(self.ma_dang_chon)
         else:
-            for bien in (self.var_benh_nhan, self.var_bac_si, self.var_ngay):
-                bien.set("-")
+            self.ma_dang_chon = None
+            self._hien_chi_tiet(None)
 
-    def _khi_chon_lich(self):
-        i = self.cb_lich.current()
-        self._hien_thong_tin_lich(self.lich_cho[i] if i >= 0 else None)
+    def _ten_bn(self, ma):
+        if self.ql_bn:
+            bn = self.ql_bn.tim_theo_ma(ma)
+            if bn:
+                return bn.ho_ten
+        return ma
 
-    def _xoa_form(self):
-        self.ma_dang_sua = None
-        self.cb_lich.state(["!disabled"])
-        self._cap_nhat_ds_lich()
-        self._hien_thong_tin_lich(None)
-        self._dat_text(self.o_trieu_chung, "")
-        self.var_chan_doan.set("")
-        for bien in self.var_dich_vu.values():
-            bien.set(False)
-        self._cap_nhat_tong()
-        self._dat_text(self.o_don_thuoc, "")
-        self._dat_text(self.o_loi_dan, "")
+    def _ten_bs(self, ma):
+        bs = self.ql_bs.tim_theo_ma(ma)
+        return f"{bs.hoc_vi}. {bs.ho_ten}" if bs else ma
 
-    def _doc_form(self, can_lich_moi):
-        """Kiểm tra form. Trả về dict hoặc None nếu có lỗi."""
-        def loi(noi_dung):
-            messagebox.showwarning(config.TIEU_DE_APP, noi_dung, parent=self)
-            return None
+    def _nap_bang(self):
+        tu_khoa, loc = self.var_tim.get().strip(), self.cb_loc.get()
+        self.bang.delete(*self.bang.get_children())
+        for pk in sorted(self.ql.lay_tat_ca(), key=lambda p: (p.ngay_kham, p.ma_phieu_kham), reverse=True):
+            ten_bn, ten_bs = self._ten_bn(pk.ma_benh_nhan), self._ten_bs(pk.ma_bac_si)
+            if loc == "Đang khám" and pk.trang_thai_kham != "Dang_kham":
+                continue
+            if loc == "Chưa thanh toán" and not (pk.trang_thai_kham == "Hoan_thanh"
+                                                  and pk.trang_thai_thanh_toan == "Chua_thanh_toan"):
+                continue
+            if loc == "Đã thanh toán" and pk.trang_thai_thanh_toan != "Da_thanh_toan":
+                continue
+            if tu_khoa and not (helpers.khop_chuoi(pk.ma_phieu_kham, tu_khoa)
+                                or helpers.khop_chuoi(pk.ma_benh_nhan, tu_khoa)
+                                or helpers.khop_ten(ten_bn, tu_khoa)):
+                continue
+            self.bang.insert("", "end", iid=pk.ma_phieu_kham, values=(
+                pk.ma_phieu_kham, pk.ngay_kham.strftime("%d/%m/%Y"), ten_bn, ten_bs,
+                TRANG_THAI_KHAM[pk.trang_thai_kham],
+                TRANG_THAI_TT[pk.trang_thai_thanh_toan] if pk.trang_thai_kham == "Hoan_thanh" else "-",
+                _tien(pk.tong_tien)))
 
-        chan_doan = self.var_chan_doan.get().strip()
-        dich_vu = self._dich_vu_da_chon()
-        if can_lich_moi and self.cb_lich.current() < 0:
-            return loi("Vui lòng chọn lịch hẹn.")
-        if not chan_doan:
-            return loi("Chẩn đoán không được để trống.")
-        if not dich_vu:
-            return loi("Vui lòng chọn ít nhất một dịch vụ.")
-        return {
-            "trieu_chung": self._lay_text(self.o_trieu_chung),
-            "chan_doan": chan_doan,
-            "dich_vu": dich_vu,
-            "don_thuoc": self._lay_text(self.o_don_thuoc),
-            "loi_dan": self._lay_text(self.o_loi_dan),
-            "tong_tien": self._tinh_tong(dich_vu),
-        }
+    def _khi_chon(self, _e=None):
+        chon = self.bang.selection()
+        self.ma_dang_chon = chon[0] if chon else None
+        self._hien_chi_tiet(self.ql.tim_theo_ma(self.ma_dang_chon) if self.ma_dang_chon else None)
 
-    # ------------------------------------------------------------ hiển thị
-    def hien_thi(self, danh_sach):
-        self.tree.delete(*self.tree.get_children())
-        for p in danh_sach:
-            self.tree.insert("", "end", iid=p["ma"], values=(
-                p["ma"], f"{p['ngay']:%d/%m/%Y}", self.ten_benh_nhan[p["ma_benh_nhan"]],
-                self.ten_bac_si[p["ma_bac_si"]], p["chan_doan"],
-                helpers.dinh_dang_tien(p["tong_tien"])))
-
-    def _khi_chon_dong(self, _event):
-        ma = self._ma_dang_chon()
-        p = self._tim_theo_ma(ma) if ma else None
-        if not p:
+    # ------------------------------------------------------------ chi tiết
+    def _hien_chi_tiet(self, pk):
+        self.bang_dv.delete(*self.bang_dv.get_children())
+        self.bang_thuoc.delete(*self.bang_thuoc.get_children())
+        self._dat_noi_dung(self.ent_chan_doan, "")
+        self._dat_noi_dung(self.ent_loi_dan, "")
+        self.dp_tai_kham.clear()
+        self.don_thuoc = []
+        if pk is None:
+            self.var_thong_tin.set("Chọn một phiếu ở bảng trên")
+            self.var_trieu_chung.set("")
+            self.var_tong.set("Tổng tiền: 0 đ")
+            self._dat_trang_thai()
             return
-        self.ma_dang_sua = ma
-        lich = self.ds_lich_hen[p["ma_lich_hen"]]
-        self.lich_cho = [lich]
-        self.cb_lich["values"] = [self._nhan_lich(lich)]
-        self.cb_lich.current(0)
-        self.cb_lich.state(["disabled"])
-        self._hien_thong_tin_lich(lich)
-        self._dat_text(self.o_trieu_chung, p["trieu_chung"])
-        self.var_chan_doan.set(p["chan_doan"])
-        for ten, bien in self.var_dich_vu.items():
-            bien.set(ten in p["dich_vu"])
-        self._cap_nhat_tong()
-        self._dat_text(self.o_don_thuoc, p["don_thuoc"])
-        self._dat_text(self.o_loi_dan, p["loi_dan"])
+        self.var_thong_tin.set(
+            f"{pk.ma_phieu_kham} - {self._ten_bn(pk.ma_benh_nhan)} ({pk.ma_benh_nhan}) - "
+            f"{self._ten_bs(pk.ma_bac_si)} - {pk.ngay_kham.strftime('%d/%m/%Y')}")
+        self.var_trieu_chung.set(pk.trieu_chung)
+        for x in pk.danh_sach_dich_vu:
+            self.bang_dv.insert("", "end", iid=x["ma_dich_vu"], values=(
+                x["ten_dich_vu"], _tien(x["don_gia"]), x["so_luong"], _tien(x["don_gia"] * x["so_luong"])))
+        self.var_tong.set(f"Tổng tiền: {_tien(pk.tong_tien)}")
+        self._dat_noi_dung(self.ent_chan_doan, pk.chan_doan)
+        self._dat_noi_dung(self.ent_loi_dan, pk.loi_dan)
+        self.don_thuoc = [dict(t) for t in pk.don_thuoc]
+        self._ve_thuoc()
+        if pk.ngay_tai_kham:
+            self.dp_tai_kham.set_date(pk.ngay_tai_kham)
+        self._dat_trang_thai(pk)
 
-    # ------------------------------------------------------------ chức năng
-    def tim(self):
-        """Tìm không cần chính xác: không phân biệt hoa/thường và dấu tiếng Việt."""
-        khoa = TIM_THEO[self.cb_tim_theo.get()]
-        tu_khoa = self.var_tu_khoa.get()
-        ket_qua = []
-        for p in self.du_lieu:
-            gia_tri = {"benh_nhan": self.ten_benh_nhan[p["ma_benh_nhan"]],
-                       "ma": p["ma"], "chan_doan": p["chan_doan"]}[khoa]
-            if helpers.khop("ho_ten" if khoa == "benh_nhan" else khoa, gia_tri, tu_khoa):
-                ket_qua.append(p)
-        self.hien_thi(ket_qua)
-        self.thong_bao(f"Tìm thấy {len(ket_qua)} phiếu khám")
+    @staticmethod
+    def _dat_noi_dung(o, noi_dung):
+        o.configure(state="normal")
+        o.delete(0, "end")
+        o.insert(0, noi_dung or "")
 
-    def lam_moi_danh_sach(self):
-        self.var_tu_khoa.set("")
-        self.hien_thi(self.du_lieu)
-        self.thong_bao("Đã làm mới danh sách")
+    def _ve_thuoc(self):
+        self.bang_thuoc.delete(*self.bang_thuoc.get_children())
+        for i, t in enumerate(self.don_thuoc):
+            self.bang_thuoc.insert("", "end", iid=str(i),
+                                   values=(t["ten_thuoc"], t["don_vi"], t["so_luong"], t["cach_dung"]))
 
-    def lam_moi_form(self):
-        self.tree.selection_remove(self.tree.selection())
-        self._xoa_form()
+    def _dat_trang_thai(self, pk=None):
+        """Bật/tắt ô theo trạng thái phiếu và vai trò."""
+        dang_kham = bool(pk) and pk.trang_thai_kham == "Dang_kham"
+        la_admin = self.vai_tro == "admin"
+        sua_ho_so = dang_kham and la_admin
 
-    def them(self):
-        if self.ma_dang_sua:
-            messagebox.showinfo(config.TIEU_DE_APP,
-                                "Phiếu này đã lập. Bấm Làm mới để lập phiếu cho lịch hẹn khác.",
-                                parent=self)
-            return
-        du_lieu_form = self._doc_form(can_lich_moi=True)
-        if not du_lieu_form:
-            return
-        lich = self.lich_cho[self.cb_lich.current()]
-        du_lieu_form.update({"ma": self._ma_moi(), "ma_lich_hen": lich["ma"],
-                             "ma_benh_nhan": lich["ma_benh_nhan"],
-                             "ma_bac_si": lich["ma_bac_si"], "ngay": lich["ngay"]})
-        self.du_lieu.append(du_lieu_form)   # NỐI A: them(...)
-        self.hien_thi(self.du_lieu)
-        self.lam_moi_form()
-        self.thong_bao(f"Đã lưu phiếu khám {du_lieu_form['ma']}")
+        def bat(cac_o, on):
+            for o in cac_o:
+                o.configure(state="normal" if on else "disabled")
 
-    def sua(self):
-        if not self.ma_dang_sua:
-            messagebox.showinfo(config.TIEU_DE_APP, "Hãy chọn một phiếu trong bảng trước.", parent=self)
-            return
-        du_lieu_form = self._doc_form(can_lich_moi=False)
-        if not du_lieu_form:
-            return
-        ma = self.ma_dang_sua
-        self._tim_theo_ma(ma).update(du_lieu_form)   # NỐI A
-        self.hien_thi(self.du_lieu)
-        self.tree.selection_set(ma)
-        self.thong_bao(f"Đã cập nhật phiếu khám {ma}")
+        bat((self.nut_them_dv, self.nut_xoa_dv), dang_kham)
+        self.cb_dv.configure(state="readonly" if dang_kham else "disabled")
+        self.sp_sl.configure(state="normal" if dang_kham else "disabled")
+        bat((self.ent_chan_doan, self.ent_loi_dan, self.ent_thuoc, self.ent_dv, self.ent_sl,
+             self.ent_cd, self.nut_them_thuoc, self.nut_xoa_thuoc, self.nut_hoan_tat), sua_ho_so)
+        self.dp_tai_kham.bat(sua_ho_so)
+        cho_tt = bool(pk) and pk.trang_thai_kham == "Hoan_thanh" and pk.trang_thai_thanh_toan == "Chua_thanh_toan"
+        bat((self.nut_thanh_toan,), cho_tt)
 
-    def xoa(self):
-        ma = self._ma_dang_chon()
-        if not ma:
-            messagebox.showinfo(config.TIEU_DE_APP, "Hãy chọn một phiếu trong bảng trước.", parent=self)
+    # ------------------------------------------------------------ thao tác
+    def _bao(self, ok, thong_diep):
+        self.thong_bao(thong_diep)
+        if not ok:
+            messagebox.showwarning(config.TIEU_DE_APP, thong_diep, parent=self)
+        return ok
+
+    def _mo_tao_phieu(self):
+        ds_bn = self.ql_bn.lay_tat_ca() if self.ql_bn else []
+        DialogTaoPhieu(self, ds_bn, self.ql_bs.lay_tat_ca(), self._tao_phieu)
+
+    def _tao_phieu(self, du_lieu):
+        ok, tb, pk = self.ql.tao_phieu_kham(du_lieu)
+        if not self._bao(ok, tb):
+            return False
+        self.ma_dang_chon = pk.ma_phieu_kham
+        self.var_tim.set("")
+        self.cb_loc.set(TAT_CA)
+        self.lam_moi()
+        return True
+
+    def _them_dv(self):
+        ma_dv = self.dich_vu.get(self.cb_dv.get())
+        if not ma_dv:
+            self._bao(False, "Chưa chọn dịch vụ!")
             return
-        if not messagebox.askyesno(config.TIEU_DE_APP, f"Xóa phiếu khám {ma}?", parent=self):
+        try:
+            so_luong = int(self.sp_sl.get())
+        except ValueError:
+            so_luong = 0
+        if self._bao(*self.ql.them_dich_vu(self.ma_dang_chon, ma_dv, so_luong)):
+            self.lam_moi()
+
+    def _xoa_dv(self):
+        chon = self.bang_dv.selection()
+        if not chon:
+            self._bao(False, "Chọn dịch vụ cần bỏ trong bảng dịch vụ!")
             return
-        self.du_lieu.remove(self._tim_theo_ma(ma))   # NỐI A: xoa(ma)
-        self.hien_thi(self.du_lieu)
-        self.lam_moi_form()
-        self.thong_bao(f"Đã xóa phiếu khám {ma}")
+        if self._bao(*self.ql.xoa_dich_vu(self.ma_dang_chon, chon[0])):
+            self.lam_moi()
+
+    def _them_thuoc(self):
+        ten = self.ent_thuoc.get().strip()
+        try:
+            so_luong = int(self.ent_sl.get())
+        except ValueError:
+            so_luong = 0
+        if not ten:
+            self._bao(False, "Tên thuốc không được để trống!")
+            return
+        if so_luong <= 0:
+            self._bao(False, "Số lượng thuốc phải là số nguyên dương!")
+            return
+        self.don_thuoc.append({"ten_thuoc": ten, "don_vi": self.ent_dv.get().strip(),
+                               "so_luong": so_luong, "cach_dung": self.ent_cd.get().strip()})
+        for o in (self.ent_thuoc, self.ent_dv, self.ent_sl, self.ent_cd):
+            o.delete(0, "end")
+        self._ve_thuoc()
+
+    def _xoa_thuoc(self):
+        chon = self.bang_thuoc.selection()
+        if chon:
+            del self.don_thuoc[int(chon[0])]
+            self._ve_thuoc()
+
+    def _hoan_tat(self):
+        if self.vai_tro != "admin":
+            self._bao(False, "Lễ tân không có quyền hoàn tất khám!")
+            return
+        if self._bao(*self.ql.hoan_tat_kham(
+                self.ma_dang_chon, self.ent_chan_doan.get(), self.ent_loi_dan.get(),
+                self.don_thuoc, self.dp_tai_kham.get().replace("/", "-") or None)):
+            self.lam_moi()
+
+    def _thanh_toan(self):
+        pk = self.ql.tim_theo_ma(self.ma_dang_chon)
+        if not pk or not messagebox.askyesno(
+                config.TIEU_DE_APP, f"Thu {_tien(pk.tong_tien)} cho phiếu {pk.ma_phieu_kham}?", parent=self):
+            return
+        ok, tb, _so_tien = self.ql.thanh_toan(self.ma_dang_chon)
+        if self._bao(ok, tb):
+            self.lam_moi()

@@ -105,3 +105,9 @@ class DatePicker(ttk.Frame):
         self.cb_thang.set(CHO_THANG)
         self.cb_ngay.set(CHO_NGAY)
         self._cap_nhat_danh_sach()
+
+    def bat(self, bat_len=True):
+        """Bật/tắt cả 3 ô."""
+        trang_thai = "readonly" if bat_len else "disabled"
+        for cb in (self.cb_nam, self.cb_thang, self.cb_ngay):
+            cb.configure(state=trang_thai)

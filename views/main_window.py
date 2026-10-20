@@ -8,6 +8,8 @@ from views.tab_benh_nhan import TabBenhNhan
 from views.tai_khoan_dialog import DialogDoiMatKhau
 from views.tab_lich_hen import TabLichHen
 from views.tab_phieu_kham import TabPhieuKham
+from views.tab_thong_ke import TabThongKe
+from views.du_lieu_gia import QuanLyPhieuKhamGia, QuanLyBacSiGia, ThongKeGia
 
 
 class MainWindow(tk.Tk):
@@ -43,9 +45,10 @@ class MainWindow(tk.Tk):
         menu_he_thong.add_command(label="Thoát", command=self.thoat)
         thanh_menu.add_cascade(label="Hệ thống", menu=menu_he_thong)
 
-        menu_bao_cao = tk.Menu(thanh_menu, tearoff=0)
-        menu_bao_cao.add_command(label="Xuất báo cáo", command=self._chua_co)
-        thanh_menu.add_cascade(label="Báo cáo", menu=menu_bao_cao)
+        if self.vai_tro == "admin":
+            menu_bao_cao = tk.Menu(thanh_menu, tearoff=0)
+            menu_bao_cao.add_command(label="Xuất báo cáo", command=self._xuat_bao_cao)
+            thanh_menu.add_cascade(label="Báo cáo", menu=menu_bao_cao)
 
         menu_tro_giup = tk.Menu(thanh_menu, tearoff=0)
         menu_tro_giup.add_command(label="Giới thiệu", command=self._gioi_thieu)
@@ -72,11 +75,33 @@ class MainWindow(tk.Tk):
         TabLichHen(self.tabs["Lịch hẹn"], thong_bao=self.trang_thai.set,
                    vai_tro=self.vai_tro).pack(fill="both", expand=True)
 
-        TabPhieuKham(self.tabs["Phiếu khám"], thong_bao=self.trang_thai.set,
-                     vai_tro=self.vai_tro).pack(fill="both", expand=True)
+        # NỐI A: thay 3 đối tượng giả bằng QuanLyBacSi, QuanLyPhieuKham, ThongKe thật
+        self.ql_bac_si = QuanLyBacSiGia()
+        self.ql_phieu = QuanLyPhieuKhamGia()
+        self.tab_phieu_kham = TabPhieuKham(
+            self.tabs["Phiếu khám"], thong_bao=self.trang_thai.set, vai_tro=self.vai_tro,
+            quan_ly=self.ql_phieu, ql_benh_nhan=self.ql_benh_nhan, ql_bac_si=self.ql_bac_si)
+        self.tab_phieu_kham.pack(fill="both", expand=True)
 
+        self.tab_thong_ke = None
         if "Thống kê" in self.tabs:
-            ttk.Label(self.tabs["Thống kê"], text="Tab Thống kê (đang phát triển)").pack(expand=True)
+            self.tab_thong_ke = TabThongKe(
+                self.tabs["Thống kê"], thong_bao=self.trang_thai.set,
+                thong_ke=ThongKeGia(self.ql_phieu, self.ql_bac_si))
+            self.tab_thong_ke.pack(fill="both", expand=True)
+
+        self.notebook.bind("<<NotebookTabChanged>>", self._khi_doi_tab)
+
+    def _khi_doi_tab(self, _e=None):
+        ten = self.notebook.tab(self.notebook.select(), "text")
+        if ten == "Phiếu khám":
+            self.tab_phieu_kham.lam_moi()
+        elif ten == "Thống kê" and self.tab_thong_ke:
+            self.tab_thong_ke.cap_nhat()
+
+    def _xuat_bao_cao(self):
+        if self.tab_thong_ke:
+            self.tab_thong_ke.xuat_bao_cao()
 
     # ---------- Thanh trạng thái ----------
     def _tao_thanh_trang_thai(self):
