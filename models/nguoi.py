@@ -34,6 +34,16 @@ class Nguoi(ABC):
         self._xa_phuong = value.strip()
 
     @property
+    def dia_chi(self):
+        return self._dia_chi
+
+    @dia_chi.setter
+    def dia_chi(self, value):
+        if not value or not value.strip():
+            raise ValueError("Địa chỉ không được để trống!")
+        self._dia_chi = value.strip()
+
+    @property
     def dia_chi_day_du(self):
         return f"{self._dia_chi}, {self._xa_phuong}, {self._tinh_thanh}"
 
@@ -44,6 +54,17 @@ class Nguoi(ABC):
     @property
     def gioi_tinh(self):
         return self._gioi_tinh
+
+    @property
+    def ngay_sinh(self):
+        """Ngày sinh (đối tượng date)."""
+        return self._ngay_sinh
+
+    @ngay_sinh.setter
+    def ngay_sinh(self, value):
+        if value > date.today():
+            raise ValueError("Ngày sinh không thể ở tương lai!")
+        self._ngay_sinh = value
 
     @gioi_tinh.setter
     def gioi_tinh(self, value):
