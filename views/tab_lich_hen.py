@@ -24,7 +24,6 @@ CHO_BENH_NHAN, CHO_BAC_SI, CHO_GIO, CHO_THOI_LUONG = (
 
 VAI_TRO_DUOC_HUY = ("admin", "le_tan")
 
-# Dữ liệu giả (NỐI A: lấy từ quản lý bệnh nhân / bác sĩ)
 DU_LIEU_BENH_NHAN_GIA = [
     ("05102026000001", "Nguyễn Văn An"),
     ("05102026000002", "Trần Thị Bình"),
@@ -60,18 +59,33 @@ def _tao_lich_gia():
 
 
 class TabLichHen(ttk.Frame):
-    def __init__(self, parent, thong_bao=None, vai_tro="admin"):
+    def __init__(self, parent, thong_bao=None, vai_tro="admin",
+                 ql_benh_nhan=None, ql_bac_si=None, ql_lich_hen=None):
         super().__init__(parent)
         self.thong_bao = thong_bao or (lambda _s: None)
         self.vai_tro = vai_tro
 
-        # NỐI A (Tuần 10): lấy danh sách thật từ lớp quản lý
-        self.ds_benh_nhan = [{"ma": m, "ho_ten": t} for m, t in DU_LIEU_BENH_NHAN_GIA]
-        self.ds_bac_si = [{"ma": m, "ten": f"{self._hoc_vi(m)}. {t}"}
-                          for m, t in DU_LIEU_BAC_SI_GIA]
+        # Có quản lý thật thì dùng, không thì dùng dữ liệu giả
+        if ql_benh_nhan is not None:
+            self.ds_benh_nhan = [{"ma": b.ma_dinh_danh, "ho_ten": b.ho_ten}
+                                 for b in ql_benh_nhan.lay_tat_ca()]
+        else:
+            self.ds_benh_nhan = [{"ma": m, "ho_ten": t} for m, t in DU_LIEU_BENH_NHAN_GIA]
+        if ql_bac_si is not None:
+            self.ds_bac_si = [{"ma": b.ma_dinh_danh, "ten": f"{b.hoc_vi}. {b.ho_ten}"}
+                              for b in ql_bac_si.lay_tat_ca()]
+        else:
+            self.ds_bac_si = [{"ma": m, "ten": f"{self._hoc_vi(m)}. {t}"}
+                              for m, t in DU_LIEU_BAC_SI_GIA]
         self.ten_benh_nhan = {b["ma"]: b["ho_ten"] for b in self.ds_benh_nhan}
         self.ten_bac_si = {b["ma"]: b["ten"] for b in self.ds_bac_si}
-        self.du_lieu = _tao_lich_gia()
+        if ql_lich_hen is not None:    
+            self.du_lieu = [{"ma": lh.ma_lich_hen, "ma_benh_nhan": lh.ma_benh_nhan,
+                             "ma_bac_si": lh.ma_bac_si, "ngay": lh.ngay_hen,
+                             "gio": lh.gio_bat_dau, "thoi_luong": lh.thoi_luong}
+                            for lh in ql_lich_hen.lay_tat_ca()]
+        else:
+            self.du_lieu = _tao_lich_gia()
 
         self.dang_hien = []
         self.cac_the = {}
@@ -420,7 +434,7 @@ class TabLichHen(ttk.Frame):
             self.thong_bao("Không đặt được lịch: bác sĩ bị trùng lịch")
             return
         lich["ma"] = self._ma_moi()
-        self.du_lieu.append(lich)  # NỐI A (Tuần 10): đặt lịch qua lớp quản lý lịch hẹn
+        self.du_lieu.append(lich)
         self.lam_moi_form()
         self.hien_thi()
         self.thong_bao(f"Đã đặt lịch {lich['ma']} ngày {lich['ngay'].strftime('%d/%m/%Y')}")
@@ -438,7 +452,6 @@ class TabLichHen(ttk.Frame):
                 f"Hủy lịch {ma} của {ten} lúc {lich['gio']} "
                 f"ngày {lich['ngay'].strftime('%d/%m/%Y')}?", parent=self):
             return
-        self.du_lieu.remove(lich)  # NỐI A (Tuần 10)
-        self.lam_moi_form()
+        self.du_lieu.remove(lich)
         self.hien_thi()
         self.thong_bao(f"Đã hủy lịch {ma}")

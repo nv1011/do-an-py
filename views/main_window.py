@@ -9,7 +9,7 @@ from views.tai_khoan_dialog import DialogDoiMatKhau
 from views.tab_lich_hen import TabLichHen
 from views.tab_phieu_kham import TabPhieuKham
 from views.tab_thong_ke import TabThongKe
-from views.du_lieu_gia import QuanLyPhieuKhamGia, QuanLyBacSiGia, ThongKeGia
+from views.du_lieu_gia import QuanLyPhieuKhamGia, QuanLyBacSiGia, QuanLyLichHenGia, ThongKeGia
 
 
 class MainWindow(tk.Tk):
@@ -72,11 +72,10 @@ class MainWindow(tk.Tk):
         TabBenhNhan(self.tabs["Bệnh nhân"], thong_bao=self.trang_thai.set,
                    vai_tro=self.vai_tro, quan_ly=self.ql_benh_nhan).pack(fill="both", expand=True)
 
-        TabLichHen(self.tabs["Lịch hẹn"], thong_bao=self.trang_thai.set,
-                   vai_tro=self.vai_tro).pack(fill="both", expand=True)
-
-        # NỐI A: thay 3 đối tượng giả bằng QuanLyBacSi, QuanLyPhieuKham, ThongKe thật
         self.ql_bac_si = QuanLyBacSiGia()
+        TabLichHen(self.tabs["Lịch hẹn"], thong_bao=self.trang_thai.set, vai_tro=self.vai_tro,
+                   ql_benh_nhan=self.ql_benh_nhan, ql_bac_si=self.ql_bac_si,
+                   ql_lich_hen=QuanLyLichHenGia()).pack(fill="both", expand=True)
         self.ql_phieu = QuanLyPhieuKhamGia()
         self.tab_phieu_kham = TabPhieuKham(
             self.tabs["Phiếu khám"], thong_bao=self.trang_thai.set, vai_tro=self.vai_tro,
