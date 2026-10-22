@@ -57,7 +57,6 @@ class Nguoi(ABC):
 
     @property
     def ngay_sinh(self):
-        """Ngày sinh (đối tượng date)."""
         return self._ngay_sinh
 
     @ngay_sinh.setter
