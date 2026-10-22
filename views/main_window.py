@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 import config
+from views import helpers
 from services.quan_ly_benh_nhan import QuanLyBenhNhan
 from views.tab_benh_nhan import TabBenhNhan
 from views.tai_khoan_dialog import DialogDoiMatKhau
@@ -20,8 +21,9 @@ class MainWindow(tk.Tk):
         self.ket_thuc = "thoat"
 
         self.title(config.TIEU_DE_APP)
-        self.geometry(config.KICH_THUOC_CUA_SO)
-        self.minsize(*config.KICH_THUOC_TOI_THIEU)
+        t = helpers.ty_le_man_hinh(self)
+        self.geometry(helpers.kich_thuoc(self, config.KICH_THUOC_CUA_SO))
+        self.minsize(*(int(x * t) for x in config.KICH_THUOC_TOI_THIEU))
         self.configure(bg=config.MAU_NEN)
         self.option_add("*Font", config.FONT_CHUNG)
 
@@ -72,6 +74,7 @@ class MainWindow(tk.Tk):
         TabBenhNhan(self.tabs["Bệnh nhân"], thong_bao=self.trang_thai.set,
                    vai_tro=self.vai_tro, quan_ly=self.ql_benh_nhan).pack(fill="both", expand=True)
 
+        # NỐI A: thay các đối tượng giả bằng QuanLyBacSi, QuanLyPhieuKham, ThongKe thật
         self.ql_bac_si = QuanLyBacSiGia()
         TabLichHen(self.tabs["Lịch hẹn"], thong_bao=self.trang_thai.set, vai_tro=self.vai_tro,
                    ql_benh_nhan=self.ql_benh_nhan, ql_bac_si=self.ql_bac_si,

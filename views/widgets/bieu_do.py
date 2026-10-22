@@ -2,13 +2,15 @@
 import math
 import tkinter as tk
 
-MAU_NEN = "#fcfcfb"
-MAU_CHU = "#0b0b0b"
-MAU_CHU_PHU = "#52514e"
-MAU_LUOI = "#e3e2df"
-MAU_DANH_MUC = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"]
+import config
+
+MAU_NEN = config.MAU_BIEU_DO_NEN
+MAU_CHU = config.MAU_BIEU_DO_CHU
+MAU_CHU_PHU = config.MAU_BIEU_DO_CHU_PHU
+MAU_LUOI = config.MAU_BIEU_DO_LUOI
+MAU_DANH_MUC = config.MAU_BIEU_DO
 FONT_NHO = ("Segoe UI", 8)
-FONT_TIEU_DE = ("Segoe UI", 10, "bold")
+FONT_TIEU_DE = config.FONT_DAM
 
 
 def _lam_tron_tren(gia_tri):
@@ -34,7 +36,7 @@ def rut_gon(so):
 class _BieuDo(tk.Canvas):
     def __init__(self, parent, tieu_de, dinh_dang=None, **kw):
         super().__init__(parent, bg=MAU_NEN, highlightthickness=1, highlightbackground=MAU_LUOI,
-                         height=kw.pop("height", 230), **kw)
+                         height=kw.pop("height", config.BIEU_DO_CAO), **kw)
         self.tieu_de = tieu_de
         self.dinh_dang = dinh_dang or (lambda v: f"{v:g}")
         self.du_lieu = []

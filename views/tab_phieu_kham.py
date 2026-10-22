@@ -100,9 +100,9 @@ class TabPhieuKham(ttk.Frame):
 
     def _tao_bang(self):
         khung = ttk.Frame(self)
-        khung.pack(fill="x", padx=8)
+        khung.pack(fill="both", expand=True, padx=8)
         self.bang = ttk.Treeview(khung, columns=[c[0] for c in CAC_COT], show="headings",
-                                 height=6, selectmode="browse")
+                                 height=8, selectmode="browse")
         for khoa, tieu_de, rong in CAC_COT:
             self.bang.heading(khoa, text=tieu_de)
             self.bang.column(khoa, width=rong, anchor="e" if khoa == "tien" else "w")
@@ -114,12 +114,12 @@ class TabPhieuKham(ttk.Frame):
 
     def _tao_chi_tiet(self):
         goc = ttk.Frame(self)
-        goc.pack(fill="both", expand=True, padx=8, pady=(4, 8))
+        goc.pack(fill="x", padx=8, pady=(4, 8))
         for c in (0, 1):
             goc.columnconfigure(c, weight=1, uniform="ct")
         goc.rowconfigure(0, weight=1)
-        trai = ttk.LabelFrame(goc, text=" Thông tin và dịch vụ ", padding=10)
-        phai = ttk.LabelFrame(goc, text=" Kết quả khám và đơn thuốc ", padding=10)
+        trai = ttk.LabelFrame(goc, text=" Thông tin và dịch vụ ", padding=6)
+        phai = ttk.LabelFrame(goc, text=" Kết quả khám và đơn thuốc ", padding=6)
         trai.grid(row=0, column=0, sticky="nsew", padx=(0, 4))
         phai.grid(row=0, column=1, sticky="nsew", padx=(4, 0))
 
@@ -131,23 +131,23 @@ class TabPhieuKham(ttk.Frame):
         self.var_trieu_chung = tk.StringVar()
         ttk.Label(trai, textvariable=self.var_ten, font=config.FONT_TIEU_DE).pack(anchor="w")
         tt = ttk.Frame(trai)
-        tt.pack(fill="x", pady=(2, 6))
+        tt.pack(fill="x", pady=(0, 4))
         tt.columnconfigure(1, weight=1)
         for i, (nhan, bien) in enumerate((("Mã bệnh nhân:", self.var_ma_bn), ("Bác sĩ:", self.var_bs),
                                           ("Ngày khám:", self.var_ngay), ("Triệu chứng:", self.var_trieu_chung))):
-            ttk.Label(tt, text=nhan, foreground="#555555").grid(row=i, column=0, sticky="w", padx=(0, 8))
+            ttk.Label(tt, text=nhan, foreground=config.MAU_CHU_PHU).grid(row=i, column=0, sticky="w", padx=(0, 8))
             ttk.Label(tt, textvariable=bien, wraplength=330).grid(row=i, column=1, sticky="w")
 
         self.bang_dv = ttk.Treeview(trai, columns=("ten", "gia", "sl", "tt"), show="headings",
-                                    height=3, selectmode="browse")
+                                    height=2, selectmode="browse")
         for khoa, td, rong, neo in (("ten", "Dịch vụ", 190, "w"), ("gia", "Đơn giá", 80, "e"),
                                     ("sl", "SL", 35, "center"), ("tt", "Thành tiền", 90, "e")):
             self.bang_dv.heading(khoa, text=td)
             self.bang_dv.column(khoa, width=rong, anchor=neo, stretch=(khoa == "ten"))
-        self.bang_dv.pack(fill="both", expand=True)
+        self.bang_dv.pack(fill="x")
 
         them = ttk.Frame(trai)
-        them.pack(fill="x", pady=6)
+        them.pack(fill="x", pady=4)
         self.cb_dv = ttk.Combobox(them, values=list(self.dich_vu), state="readonly")
         self.cb_dv.pack(side="left", fill="x", expand=True)
         self.sp_sl = ttk.Spinbox(them, from_=1, to=99, width=4)
@@ -161,7 +161,7 @@ class TabPhieuKham(ttk.Frame):
         cuoi = ttk.Frame(trai)
         cuoi.pack(fill="x")
         self.var_tong = tk.StringVar(value="Tổng tiền: 0 đ")
-        ttk.Label(cuoi, textvariable=self.var_tong, font=("Segoe UI", 12, "bold")).pack(side="left")
+        ttk.Label(cuoi, textvariable=self.var_tong, font=config.FONT_TONG_TIEN).pack(side="left")
         self.nut_thanh_toan = ttk.Button(cuoi, text="Thanh toán", command=self._thanh_toan)
         self.nut_thanh_toan.pack(side="right")
 
@@ -169,23 +169,22 @@ class TabPhieuKham(ttk.Frame):
         phai.columnconfigure(0, weight=1)
         ttk.Label(phai, text="Chẩn đoán *").grid(row=0, column=0, sticky="w")
         self.ent_chan_doan = ttk.Entry(phai)
-        self.ent_chan_doan.grid(row=1, column=0, sticky="ew", pady=(0, 6))
+        self.ent_chan_doan.grid(row=1, column=0, sticky="ew", pady=(0, 3))
         ttk.Label(phai, text="Lời dặn").grid(row=2, column=0, sticky="w")
         self.ent_loi_dan = ttk.Entry(phai)
-        self.ent_loi_dan.grid(row=3, column=0, sticky="ew", pady=(0, 6))
+        self.ent_loi_dan.grid(row=3, column=0, sticky="ew", pady=(0, 3))
 
         ttk.Label(phai, text="Đơn thuốc").grid(row=4, column=0, sticky="w")
         self.bang_thuoc = ttk.Treeview(phai, columns=("ten", "dv", "sl", "cd"), show="headings",
-                                       height=3, selectmode="browse")
+                                       height=2, selectmode="browse")
         for khoa, td, rong, neo in (("ten", "Tên thuốc", 130, "w"), ("dv", "Đơn vị", 60, "w"),
                                     ("sl", "SL", 40, "center"), ("cd", "Cách dùng", 150, "w")):
             self.bang_thuoc.heading(khoa, text=td)
             self.bang_thuoc.column(khoa, width=rong, anchor=neo, stretch=(khoa in ("ten", "cd")))
         self.bang_thuoc.grid(row=5, column=0, sticky="nsew")
-        phai.rowconfigure(5, weight=1)
 
         nhap = ttk.Frame(phai)
-        nhap.grid(row=6, column=0, sticky="ew", pady=6)
+        nhap.grid(row=6, column=0, sticky="ew", pady=4)
         nhap.columnconfigure(0, weight=3)
         nhap.columnconfigure(3, weight=3)
         self.ent_thuoc, self.ent_dv, self.ent_sl, self.ent_cd = (ttk.Entry(nhap) for _ in range(4))
@@ -193,7 +192,7 @@ class TabPhieuKham(ttk.Frame):
         self.ent_sl.configure(width=5)
         for cot, (nhan, o) in enumerate((("Tên thuốc", self.ent_thuoc), ("Đơn vị", self.ent_dv),
                                          ("SL", self.ent_sl), ("Cách dùng", self.ent_cd))):
-            ttk.Label(nhap, text=nhan, foreground="#555555").grid(row=0, column=cot, sticky="w", padx=(0, 4))
+            ttk.Label(nhap, text=nhan, foreground=config.MAU_CHU_PHU).grid(row=0, column=cot, sticky="w", padx=(0, 4))
             o.grid(row=1, column=cot, sticky="ew", padx=(0, 4))
         self.nut_them_thuoc = ttk.Button(nhap, text="Thêm", width=7, command=self._them_thuoc)
         self.nut_them_thuoc.grid(row=1, column=4, padx=(0, 4))

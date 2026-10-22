@@ -64,7 +64,7 @@ class DialogTaoTaiKhoan(_HopThoai):
         self.them_o(1, "Mật khẩu (từ 6 ký tự)", self.var_mk)
         self.them_o(2, "Nhập lại mật khẩu", self.var_nhap_lai)
         ttk.Label(self.khung, text="Tài khoản mới có quyền người dùng thông thường.",
-                  foreground="#777777").grid(row=6, column=0, sticky="w", pady=(8, 0))
+                  foreground=config.MAU_CHU_MO).grid(row=6, column=0, sticky="w", pady=(8, 0))
         self.them_nut(4, "Tạo tài khoản")
         self.hien()
         o_ten.focus_set()

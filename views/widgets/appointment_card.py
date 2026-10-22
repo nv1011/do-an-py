@@ -3,10 +3,10 @@ import tkinter as tk
 
 import config
 
-CHIEU_RONG_THE = 215
-CHIEU_CAO_THE = 130
-MAU_VIEN = "#444444"
-MAU_VIEN_CHON = "#2e6bb0"
+CHIEU_RONG_THE = config.THE_RONG
+CHIEU_CAO_THE = config.THE_CAO
+MAU_VIEN = config.MAU_VIEN
+MAU_VIEN_CHON = config.MAU_VIEN_CHON
 
 
 class AppointmentCard(tk.Frame):
@@ -19,11 +19,11 @@ class AppointmentCard(tk.Frame):
         self.khi_chon = khi_chon
 
         tk.Label(self, text=f"{gio_bat_dau} - {gio_ket_thuc}", bg=config.MAU_NHAN_MANH,
-                 anchor="w", padx=10, pady=6, font=("Segoe UI", 10, "bold")).pack(fill="x")
+                 anchor="w", padx=10, pady=6, font=config.FONT_DAM).pack(fill="x")
         tk.Label(self, text=ten_benh_nhan, bg="white", anchor="w",
                  font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=10, pady=(8, 2))
         for dong in (f"Mã BN: {ma_benh_nhan}", ten_bac_si, f"Thời lượng: {thoi_luong} phút"):
-            tk.Label(self, text=dong, bg="white", fg="#555555", anchor="w").pack(
+            tk.Label(self, text=dong, bg="white", fg=config.MAU_CHU_PHU, anchor="w").pack(
                 anchor="w", padx=10)
 
         self._gan_su_kien(self)
