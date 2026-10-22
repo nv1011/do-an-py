@@ -46,6 +46,22 @@ class Nguoi(ABC):
         return self._gioi_tinh
 
     @property
+    def ngay_sinh(self):
+        return self._ngay_sinh
+
+    @ngay_sinh.setter
+    def ngay_sinh(self, value):
+        if value > date.today():
+            raise ValueError("Ngày sinh không thể ở tương lai!")
+        self._ngay_sinh = value
+
+    @gioi_tinh.setter
+    def gioi_tinh(self, value):
+        if value not in ("Nam", "Nữ", "Khác"):
+            raise ValueError("Giới tính không hợp lệ!")
+        self._gioi_tinh = value
+
+    @property
     def tuoi(self):
         hom_nay = date.today()
         n = self._ngay_sinh
