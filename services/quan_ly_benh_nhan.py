@@ -5,6 +5,8 @@ from services.json_store import JsonStore
 from utils.helpers import khop
 from utils.validators import la_ngay_hop_le, la_sdt_hop_le, la_ma_bhyt_hop_le, la_email_hop_le
 
+FILE_LICH_HEN = "benh_nhan.json"
+
 # Ánh xạ mã tiêu chí sang tên thuộc tính của đối tượng BenhNhan
 _TRUONG_TIM = {
     "ho_ten": "ho_ten",
