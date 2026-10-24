@@ -83,7 +83,7 @@ class QuanLyLichHen:
     def kiem_tra_trung_lich(self, ma_bac_si, ngay, gio_bat_dau, thoi_luong, ma_lich_hen_bo_qua=None):
         """Kiểm tra xung đột thời gian khám của bác sĩ (bỏ qua lịch hủy, vắng và mã lịch đang sửa)."""
         if isinstance(ngay, str):
-        parsed = False
+            parsed = False
         for fmt in ("%d-%m-%Y", "%Y-%m-%d"):
             try:
                 ngay = datetime.strptime(ngay.strip(), fmt).date()
