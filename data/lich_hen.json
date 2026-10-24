@@ -1,0 +1,62 @@
+[
+  {
+    "ma_lich_hen": "LH001",
+    "ma_benh_nhan": "12102026000002",
+    "ma_bac_si": "010120001",
+    "ngay_hen": "2026-10-12",
+    "gio_bat_dau": "08:00",
+    "thoi_luong": 30,
+    "trang_thai": "Cho_kham",
+    "ly_do_kham": "Khám định kỳ huyết áp"
+  },
+  {
+    "ma_lich_hen": "LH002",
+    "ma_benh_nhan": "12102026000003",
+    "ma_bac_si": "010120001",
+    "ngay_hen": "2026-10-12",
+    "gio_bat_dau": "08:30",
+    "thoi_luong": 30,
+    "trang_thai": "Cho_kham",
+    "ly_do_kham": "Đau bụng thượng vị"
+  },
+  {
+    "ma_lich_hen": "LH003",
+    "ma_benh_nhan": "12102026000004",
+    "ma_bac_si": "030222002",
+    "ngay_hen": "2026-10-12",
+    "gio_bat_dau": "09:00",
+    "thoi_luong": 30,
+    "trang_thai": "Cho_kham",
+    "ly_do_kham": "Tư vấn sức khỏe cho con"
+  },
+  {
+    "ma_lich_hen": "LH004",
+    "ma_benh_nhan": "12102026000005",
+    "ma_bac_si": "030222002",
+    "ngay_hen": "2026-10-12",
+    "gio_bat_dau": "09:30",
+    "thoi_luong": 45,
+    "trang_thai": "Cho_kham",
+    "ly_do_kham": "Khám dinh dưỡng"
+  },
+  {
+    "ma_lich_hen": "LH005",
+    "ma_benh_nhan": "12102026000006",
+    "ma_bac_si": "020419003",
+    "ngay_hen": "2026-10-12",
+    "gio_bat_dau": "10:15",
+    "thoi_luong": 30,
+    "trang_thai": "Cho_kham",
+    "ly_do_kham": "Khàn tiếng và đau họng kéo dài"
+  },
+  {
+    "ma_lich_hen": "LH006",
+    "ma_benh_nhan": "12102026000007",
+    "ma_bac_si": "010120001",
+    "ngay_hen": "2026-10-12",
+    "gio_bat_dau": "14:00",
+    "thoi_luong": 30,
+    "trang_thai": "Cho_kham",
+    "ly_do_kham": "Kiểm tra sức khỏe tổng quát"
+  }
+]

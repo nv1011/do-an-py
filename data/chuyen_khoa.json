@@ -1,0 +1,32 @@
+[
+  {
+    "ma_chuyen_khoa": "01",
+    "ten_chuyen_khoa": "Nội khoa",
+    "mo_ta": "Khám và điều trị các bệnh lý tim mạch, tiêu hóa, hô hấp, nội tiết"
+  },
+  {
+    "ma_chuyen_khoa": "02",
+    "ten_chuyen_khoa": "Nhi khoa",
+    "mo_ta": "Khám và điều trị các bệnh lý cho trẻ sơ sinh và trẻ em"
+  },
+  {
+    "ma_chuyen_khoa": "03",
+    "ten_chuyen_khoa": "Răng - Hàm - Mặt",
+    "mo_ta": "Khám, điều trị nha khoa tổng quát và chỉnh nha"
+  },
+  {
+    "ma_chuyen_khoa": "04",
+    "ten_chuyen_khoa": "Tai - Mũi - Họng",
+    "mo_ta": "Khám nội soi và điều trị các bệnh lý tai, mũi, họng"
+  },
+  {
+    "ma_chuyen_khoa": "05",
+    "ten_chuyen_khoa": "Mắt",
+    "mo_ta": "Khám khúc xạ, điều trị các bệnh lý nhãn khoa"
+  },
+  {
+    "ma_chuyen_khoa": "06",
+    "ten_chuyen_khoa": "Da liễu",
+    "mo_ta": "Khám và điều trị các bệnh ngoài da và dị ứng"
+  }
+]
