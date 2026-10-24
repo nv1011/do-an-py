@@ -1,4 +1,5 @@
 requests
 tkcalendar
 orjson
+requests
 beautifulsoup4
