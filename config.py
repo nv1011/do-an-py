@@ -1,3 +1,5 @@
+import os
+
 TIEU_DE_APP = "Quản lý phòng khám"
 
 # Cửa sổ chính
@@ -16,13 +18,13 @@ MAU_LOI = "#c0392b"
 # Thứ tự các tab trong Notebook
 DANH_SACH_TAB = ["Bệnh nhân", "Lịch hẹn", "Phiếu khám", "Thống kê"]
 
-# Từ điển học vị bác sĩ (mã 2 số -> tên viết tắt)
+# Dictionary học vị bác sĩ (mã 2 số -> tên viết tắt)
 HOC_VI = {
     "01": "TS",
     "02": "ThS",
     "03": "BS"
 }
-hoc_vi = HOC_VI  # Alias tương thích ngược
+hoc_vi = HOC_VI
 
 # Cấu hình khung giờ và lịch hẹn
 GIO_BAT_DAU_KHAM = "07:00"
@@ -39,3 +41,10 @@ CA_TRUC = {
 VAI_TRO_ADMIN = "admin"
 VAI_TRO_LE_TAN = "le_tan"
 DANH_SACH_VAI_TRO = [VAI_TRO_ADMIN, VAI_TRO_LE_TAN]
+
+# Cấu hình đường dẫn thư mục và các tệp dữ liệu JSON
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FILE_TAI_KHOAN = os.path.join(BASE_DIR, "data", "tai_khoan.json")
+FILE_BENH_NHAN = os.path.join(BASE_DIR, "data", "benh_nhan.json")
+FILE_LICH_HEN = os.path.join(BASE_DIR, "data", "lich_hen.json")
+FILE_BAC_SI = os.path.join(BASE_DIR, "data", "bac_si.json")
