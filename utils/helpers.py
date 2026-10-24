@@ -1,6 +1,5 @@
-"""Tiện ích dùng chung toàn hệ thống: tìm kiếm tiếng Việt, ngày tháng, giờ giấc và kiểm tra dữ liệu."""
+"""Tiện ích dùng chung toàn hệ thống: các hàm không sử dụng Tkinter."""
 import calendar
-import re
 import unicodedata
 from datetime import date
 
@@ -120,3 +119,15 @@ def tim_lich_trung(danh_sach, ma_bac_si, ngay, gio_bat_dau, thoi_luong, bo_qua_m
         if bd < kt_kia and bd_kia < kt:
             return lich
     return None
+
+# ------------------------------------------------------------------ Khung chương trình
+def ty_le_man_hinh(cua_so):
+    """Hệ số thu phóng của màn hình (1.0 = 100%)."""
+    return max(1.0, cua_so.winfo_fpixels("1i") / 96)
+
+
+def kich_thuoc(cua_so, chuoi):
+    """'1150x720' -> '1437x900' khi màn hình thu phóng 125%."""
+    rong, cao = (int(x) for x in chuoi.split("x"))
+    t = ty_le_man_hinh(cua_so)
+    return f"{int(rong * t)}x{int(cao * t)}"

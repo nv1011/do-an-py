@@ -1,10 +1,10 @@
 """Dịch vụ quản lý lịch hẹn (CRUD, lọc theo ngày/bác sĩ, kiểm tra trùng lịch)."""
 from datetime import date, datetime
+from utils.helpers import gio_ra_phut
 from models.lich_hen import LichHen
 from services.json_store import JsonStore
 from utils.helpers import tim_lich_trung
-
-FILE_LICH_HEN = "lich_hen.json"
+from config import FILE_LICH_HEN
 
 
 class QuanLyLichHen:
@@ -18,8 +18,11 @@ class QuanLyLichHen:
         self.nap_du_lieu()
 
     def nap_du_lieu(self):
-        """Đọc danh sách lịch hẹn từ file JSON vào bộ nhớ RAM."""
+        """Đọc danh sách lịch hẹn từ file JSON vào bộ nhớ."""
         danh_sach_raw = self.store.doc_file(self.ten_file)
+        if self.store.loi_cuoi:
+                    pass
+        
         self._danh_sach = []
         for d in danh_sach_raw:
             try:
@@ -33,7 +36,7 @@ class QuanLyLichHen:
         return self.store.ghi_file(self.ten_file, du_lieu_json)
 
     def lay_tat_ca(self):
-        """Trả về toàn bộ danh sách lịch hẹn trong bộ nhớ RAM."""
+        """Trả về toàn bộ danh sách lịch hẹn."""
         return list(self._danh_sach)
 
     def tim_theo_ma(self, ma):

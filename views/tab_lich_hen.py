@@ -1,21 +1,16 @@
-"""Tab Lịch hẹn: bộ lọc + bảng + thẻ lịch hẹn + form đặt lịch
-
-
-Mã dùng đúng định dạng :
-- bệnh nhân: 14 chữ số, 8 số đầu là ngày (ddmmyyyy)
-- bác sĩ: 9 chữ số (2 số học vị, 2 số chuyên khoa, 2 số năm vào làm, 3 số cuối)
-Mỗi lịch hẹn là một dict: ma, ma_benh_nhan, ma_bac_si, ngay (date), gio ('HH:MM'), thoi_luong (phút).
-"""
+"""Tab Lịch hẹn: bộ lọc, bảng, thẻ lịch hẹn và form đặt lịch."""
 import tkinter as tk
 from tkinter import ttk, messagebox
-from datetime import date, timedelta
+from datetime import date
 
 import config
+from services.quan_ly_bac_si import QuanLyBacSi
+from services.quan_ly_benh_nhan import QuanLyBenhNhan
+from services.quan_ly_lich_hen import QuanLyLichHen
 from views import helpers
 from views.widgets.date_picker import DatePicker
 from views.widgets.appointment_card import AppointmentCard, CHIEU_CAO_THE
 
-# khóa, tiêu đề cột, độ rộng
 CAC_COT = [
     ("ma", "Mã", 70),
     ("benh_nhan", "Bệnh nhân", 170),
@@ -30,67 +25,36 @@ CAC_THOI_LUONG = ["15", "30", "45", "60", "90", "120"]
 CHO_BENH_NHAN, CHO_BAC_SI, CHO_GIO, CHO_THOI_LUONG = (
     "Chọn bệnh nhân", "Chọn bác sĩ", "Chọn giờ", "Chọn thời lượng")
 
-# Theo phân quyền của nhóm: le_tan chỉ đặt lịch, tìm kiếm, xem -> chỉ admin được hủy lịch.
-VAI_TRO_DUOC_HUY = ("admin",)
-
-# Dữ liệu giả
-DU_LIEU_BENH_NHAN_GIA = [
-    ("05102026000001", "Nguyễn Văn An"),
-    ("05102026000002", "Trần Thị Bình"),
-    ("06102026000003", "Lê Minh Châu"),
-    ("07102026000004", "Phạm Quốc Dũng"),
-    ("08102026000005", "Hoàng Thu Hà"),
-    ("09102026000006", "Vũ Đức Huy"),
-    ("12102026000007", "Đặng Mỹ Linh"),
-    ("12102026000008", "Bùi Anh Khoa"),
-]
-DU_LIEU_BAC_SI_GIA = [
-    ("030312001", "Nguyễn Văn An"),
-    ("030118002", "Lê Thị Mai"),
-    ("030209003", "Trần Quang Vinh"),
-]
-
-
-def _tao_lich_gia():
-    """Lịch giả theo ngày hôm nay và một lịch ngày mai."""
-    hom_nay = date.today()
-    ngay_mai = hom_nay + timedelta(days=1)
-    mau = [
-        ("LH001", "05102026000002", "030312001", hom_nay, "08:00", 30),
-        ("LH002", "06102026000003", "030312001", hom_nay, "08:30", 30),
-        ("LH003", "07102026000004", "030118002", hom_nay, "09:00", 30),
-        ("LH004", "08102026000005", "030118002", hom_nay, "09:30", 45),
-        ("LH005", "09102026000006", "030209003", hom_nay, "10:15", 30),
-        ("LH006", "12102026000007", "030312001", hom_nay, "14:00", 30),
-        ("LH007", "05102026000001", "030209003", ngay_mai, "08:00", 30),
-    ]
-    return [dict(zip(("ma", "ma_benh_nhan", "ma_bac_si", "ngay", "gio", "thoi_luong"), m))
-            for m in mau]
+VAI_TRO_DUOC_HUY = ("admin", "le_tan")
 
 
 class TabLichHen(ttk.Frame):
-    def __init__(self, parent, thong_bao=None, vai_tro="admin"):
+    def __init__(self, parent, thong_bao=None, vai_tro="admin",
+                 ql_benh_nhan=None, ql_bac_si=None, ql_lich_hen=None):
         super().__init__(parent)
         self.thong_bao = thong_bao or (lambda _s: None)
         self.vai_tro = vai_tro
 
-        # NỐI A lấy danh sách thật từ lớp quản lý
-        self.ds_benh_nhan = [{"ma": m, "ho_ten": t} for m, t in DU_LIEU_BENH_NHAN_GIA]
-        self.ds_bac_si = [{"ma": m, "ten": f"{self._hoc_vi(m)}. {t}"}
-                          for m, t in DU_LIEU_BAC_SI_GIA]
+        self.ql_bn = ql_benh_nhan or QuanLyBenhNhan()
+        self.ql_bs = ql_bac_si or QuanLyBacSi()
+        self.ql = ql_lich_hen or QuanLyLichHen(quan_ly_bac_si=self.ql_bs)
+        self.ds_benh_nhan = [{"ma": b.ma_dinh_danh, "ho_ten": b.ho_ten}
+                             for b in self.ql_bn.lay_tat_ca()]
+        self.ds_bac_si = [{"ma": b.ma_dinh_danh, "ten": f"{b.hoc_vi}. {b.ho_ten}"}
+                          for b in self.ql_bs.lay_tat_ca()]
         self.ten_benh_nhan = {b["ma"]: b["ho_ten"] for b in self.ds_benh_nhan}
         self.ten_bac_si = {b["ma"]: b["ten"] for b in self.ds_bac_si}
-        self.du_lieu = _tao_lich_gia()
+        self._nap_du_lieu()
 
-        self.dang_hien = []      # các lịch đang hiển thị (sau khi lọc)
-        self.cac_the = {}        # mã lịch hẹn -> AppointmentCard
+        self.dang_hien = []
+        self.cac_the = {}
         self.ma_the_dang_chon = None
 
         self._tao_thanh_loc()
         khung_chinh = ttk.Frame(self)
         khung_chinh.pack(fill="both", expand=True, padx=10, pady=(0, 10))
-        khung_chinh.columnconfigure(0, weight=1)   # bảng + thẻ giãn theo cửa sổ
-        khung_chinh.columnconfigure(1, weight=0)   # form giữ độ rộng cố định
+        khung_chinh.columnconfigure(0, weight=1)
+        khung_chinh.columnconfigure(1, weight=0)
         khung_chinh.rowconfigure(0, weight=1)
 
         khung_trai = ttk.Frame(khung_chinh)
@@ -102,10 +66,6 @@ class TabLichHen(ttk.Frame):
         self.hien_thi()
         self.ap_dung_phan_quyen()
 
-    @staticmethod
-    def _hoc_vi(ma_bac_si):
-        return getattr(config, "hoc_vi", {}).get(ma_bac_si[:2], "BS")
-
     # ------------------------------------------------------------ giao diện
     def _tao_thanh_loc(self):
         nam = date.today().year
@@ -116,7 +76,7 @@ class TabLichHen(ttk.Frame):
         self.loc_ngay = DatePicker(thanh, nam_nho_nhat=nam - 1, nam_lon_nhat=nam + 2,
                                    nam_tang_dan=True, gioi_han_hom_nay=False)
         self.loc_ngay.grid(row=0, column=1, padx=(0, 16))
-        self.loc_ngay.set_date(date.today())   # mặc định xem lịch hôm nay
+        self.loc_ngay.set_date(date.today())
 
         ttk.Label(thanh, text="Bác sĩ:").grid(row=0, column=2, padx=(0, 6))
         self.cb_loc_bac_si = ttk.Combobox(
@@ -147,7 +107,8 @@ class TabLichHen(ttk.Frame):
         self.tree.bind("<<TreeviewSelect>>", self._khi_chon_dong)
 
     def _tao_khung_the(self, cha):
-        ttk.Label(cha, text="Lịch hẹn dạng thẻ", font=("Segoe UI", 10, "bold")).pack(
+        """Hàng thẻ lịch hẹn, cuộn ngang khi có nhiều thẻ."""
+        ttk.Label(cha, text="Lịch hẹn dạng thẻ", font=config.FONT_DAM).pack(
             anchor="w", pady=(10, 4))
         khung = ttk.Frame(cha)
         khung.pack(fill="x")
@@ -205,18 +166,17 @@ class TabLichHen(ttk.Frame):
         self.cb_thoi_luong.grid(row=7, column=1, sticky="ew")
         self.cb_thoi_luong.bind("<<ComboboxSelected>>", lambda _e: self._xem_truoc_trung_lich())
 
-        # Khung cảnh báo trùng lịch (chỉ hiện khi có trùng)
-        self.khung_canh_bao = tk.Frame(form, bg="#fbeceb", highlightthickness=1,
+        self.khung_canh_bao = tk.Frame(form, bg=config.MAU_NEN_LOI, highlightthickness=1,
                                        highlightbackground=config.MAU_LOI)
-        tk.Label(self.khung_canh_bao, text="Trùng lịch!", bg="#fbeceb", fg=config.MAU_LOI,
-                 font=("Segoe UI", 10, "bold")).pack(anchor="w", padx=10, pady=(6, 0))
-        self.nhan_canh_bao = tk.Label(self.khung_canh_bao, bg="#fbeceb", fg=config.MAU_LOI,
+        tk.Label(self.khung_canh_bao, text="Trùng lịch!", bg=config.MAU_NEN_LOI, fg=config.MAU_LOI,
+                 font=config.FONT_DAM).pack(anchor="w", padx=10, pady=(6, 0))
+        self.nhan_canh_bao = tk.Label(self.khung_canh_bao, bg=config.MAU_NEN_LOI, fg=config.MAU_LOI,
                                       justify="left", anchor="w", wraplength=270)
         self.nhan_canh_bao.pack(anchor="w", padx=10, pady=(0, 6))
         self.khung_canh_bao.grid(row=8, column=0, columnspan=2, sticky="ew", pady=(12, 0))
         self.khung_canh_bao.grid_remove()
 
-        form.rowconfigure(9, weight=1)   # đẩy hàng nút xuống đáy form
+        form.rowconfigure(9, weight=1)
 
         khung_nut = ttk.Frame(form)
         khung_nut.grid(row=10, column=0, columnspan=2, sticky="ew", pady=(18, 0))
@@ -233,12 +193,13 @@ class TabLichHen(ttk.Frame):
         return form
 
     def ap_dung_phan_quyen(self):
-        """Chỉ admin được hủy lịch; lễ tân vẫn đặt lịch, lọc, xem."""
+        """Admin và lễ tân đều được hủy lịch."""
         if self.vai_tro not in VAI_TRO_DUOC_HUY:
             self.nut_huy.state(["disabled"])
 
     # ------------------------------------------------------------ hiển thị
     def _lich_theo_bo_loc(self):
+        """Ngày chưa chọn = mọi ngày; 'Tất cả bác sĩ' = mọi bác sĩ."""
         ngay = self.loc_ngay.get_date()
         i = self.cb_loc_bac_si.current()
         ma_bs = self.ds_bac_si[i - 1]["ma"] if i > 0 else None
@@ -270,7 +231,7 @@ class TabLichHen(ttk.Frame):
 
         if not self.dang_hien:
             tk.Label(self.khung_the, text="Không có lịch hẹn nào", bg=config.MAU_NEN,
-                     fg="#777777").pack(side="left", padx=10, pady=10)
+                     fg=config.MAU_CHU_MO).pack(side="left", padx=10, pady=10)
         for lh in self.dang_hien:
             the = AppointmentCard(
                 self.khung_the, ma=lh["ma"], gio_bat_dau=lh["gio"],
@@ -284,6 +245,7 @@ class TabLichHen(ttk.Frame):
         self.canvas_the.xview_moveto(0)
 
     def _danh_dau_the(self, ma):
+        """Viền xanh cho thẻ của lịch đang chọn (ma=None: bỏ chọn)."""
         if self.ma_the_dang_chon in self.cac_the:
             self.cac_the[self.ma_the_dang_chon].chon(False)
         self.ma_the_dang_chon = ma if ma in self.cac_the else None
@@ -291,7 +253,7 @@ class TabLichHen(ttk.Frame):
             self.cac_the[self.ma_the_dang_chon].chon(True)
 
     def _khi_chon_the(self, ma):
-        self.tree.selection_set(ma)   # kích hoạt _khi_chon_dong
+        self.tree.selection_set(ma)
         self.tree.see(ma)
 
     def _khi_chon_dong(self, _event):
@@ -300,7 +262,6 @@ class TabLichHen(ttk.Frame):
         self._danh_dau_the(ma if lich else None)
         if not lich:
             return
-        # Đổ thông tin lịch đang chọn vào form để xem, hoặc để hủy
         for i, b in enumerate(self.ds_benh_nhan):
             if b["ma"] == lich["ma_benh_nhan"]:
                 self.cb_benh_nhan.current(i)
@@ -320,9 +281,12 @@ class TabLichHen(ttk.Frame):
     def _tim_theo_ma(self, ma):
         return next((lh for lh in self.du_lieu if lh["ma"] == ma), None)
 
-    def _ma_moi(self):
-        so_lon_nhat = max((int(lh["ma"][2:]) for lh in self.du_lieu), default=0)
-        return f"LH{so_lon_nhat + 1:03d}"
+    def _nap_du_lieu(self):
+        """Lấy lịch hẹn từ QuanLyLichHen (bỏ lịch đã hủy)."""
+        self.du_lieu = [{"ma": lh.ma_lich_hen, "ma_benh_nhan": lh.ma_benh_nhan,
+                         "ma_bac_si": lh.ma_bac_si, "ngay": lh.ngay_hen,
+                         "gio": lh.gio_bat_dau, "thoi_luong": lh.thoi_luong}
+                        for lh in self.ql.lay_tat_ca() if lh.trang_thai != "Da_huy"]
 
     def _xoa_form(self):
         self.cb_benh_nhan.set(CHO_BENH_NHAN)
@@ -333,6 +297,7 @@ class TabLichHen(ttk.Frame):
         self._an_canh_bao()
 
     def _doc_lich_dang_nhap(self):
+        """(ma_bac_si, ngay, gio, thoi_luong) nếu đã chọn đủ, ngược lại None."""
         i = self.cb_bac_si.current()
         ngay = self.chon_ngay.get_date()
         gio = self.cb_gio.get()
@@ -342,32 +307,30 @@ class TabLichHen(ttk.Frame):
         return self.ds_bac_si[i]["ma"], ngay, gio, int(thoi_luong)
 
     # ------------------------------------------------------------ cảnh báo trùng lịch
-    def _hien_canh_bao(self, lich_trung):
-        gio_kt = helpers.gio_ket_thuc(lich_trung["gio"], lich_trung["thoi_luong"])
-        self.nhan_canh_bao.configure(text=(
-            f"{self.ten_bac_si.get(lich_trung['ma_bac_si'], lich_trung['ma_bac_si'])} "
-            f"đã có lịch\n{lich_trung['gio']} - {gio_kt} "
-            f"ngày {lich_trung['ngay'].strftime('%d/%m/%Y')}"))
+    def _hien_canh_bao(self, noi_dung):
+        self.nhan_canh_bao.configure(text=noi_dung)
         self.khung_canh_bao.grid()
 
     def _an_canh_bao(self):
         self.khung_canh_bao.grid_remove()
 
     def _xem_truoc_trung_lich(self):
+        """Báo trùng ngay khi chọn bác sĩ/ngày/giờ/thời lượng (chưa cần bấm Đặt lịch)."""
         thong_tin = self._doc_lich_dang_nhap()
         if thong_tin is None:
             self._an_canh_bao()
             return
         ma_bs, ngay, gio, thoi_luong = thong_tin
-        trung = helpers.tim_lich_trung(self.du_lieu, ma_bs, ngay, gio, thoi_luong,
-                                       bo_qua_ma=self._ma_dang_chon())
+        trung, thong_diep = self.ql.kiem_tra_trung_lich(
+            ma_bs, ngay, gio, thoi_luong, ma_lich_hen_bo_qua=self._ma_dang_chon())
         if trung:
-            self._hien_canh_bao(trung)
+            self._hien_canh_bao(thong_diep)
         else:
             self._an_canh_bao()
 
     # ------------------------------------------------------------ chức năng
     def _doc_form(self):
+        """Kiểm tra form đặt lịch. Trả về dict (chưa có mã lịch hẹn) hoặc None nếu có lỗi."""
         def loi(noi_dung):
             messagebox.showwarning(config.TIEU_DE_APP, noi_dung, parent=self)
 
@@ -403,6 +366,7 @@ class TabLichHen(ttk.Frame):
         self.thong_bao(f"Có {len(self.dang_hien)} lịch hẹn")
 
     def lam_moi_bo_loc(self):
+        """Bỏ lọc: mọi ngày, mọi bác sĩ."""
         self.loc_ngay.clear()
         self.cb_loc_bac_si.current(0)
         self.hien_thi()
@@ -416,17 +380,24 @@ class TabLichHen(ttk.Frame):
         lich = self._doc_form()
         if not lich:
             return
-        trung = helpers.tim_lich_trung(self.du_lieu, lich["ma_bac_si"], lich["ngay"],
-                                       lich["gio"], lich["thoi_luong"])
+        trung, thong_diep = self.ql.kiem_tra_trung_lich(
+            lich["ma_bac_si"], lich["ngay"], lich["gio"], lich["thoi_luong"])
         if trung:
-            self._hien_canh_bao(trung)
+            self._hien_canh_bao(thong_diep)
             self.thong_bao("Không đặt được lịch: bác sĩ bị trùng lịch")
             return
-        lich["ma"] = self._ma_moi()
-        self.du_lieu.append(lich)  # NỐI A đặt lịch qua lớp quản lý lịch hẹn
+        ok, thong_diep, lh = self.ql.dat_lich({
+            "ma_benh_nhan": lich["ma_benh_nhan"], "ma_bac_si": lich["ma_bac_si"],
+            "ngay_hen": lich["ngay"].strftime("%d-%m-%Y"),     # hợp đồng hàm: DD-MM-YYYY
+            "gio_bat_dau": lich["gio"], "thoi_luong": lich["thoi_luong"]})
+        if not ok:
+            messagebox.showwarning(config.TIEU_DE_APP, thong_diep, parent=self)
+            self.thong_bao(thong_diep)
+            return
+        self._nap_du_lieu()
         self.lam_moi_form()
         self.hien_thi()
-        self.thong_bao(f"Đã đặt lịch {lich['ma']} ngày {lich['ngay'].strftime('%d/%m/%Y')}")
+        self.thong_bao(thong_diep)
 
     def huy_lich(self):
         ma = self._ma_dang_chon()
@@ -441,7 +412,12 @@ class TabLichHen(ttk.Frame):
                 f"Hủy lịch {ma} của {ten} lúc {lich['gio']} "
                 f"ngày {lich['ngay'].strftime('%d/%m/%Y')}?", parent=self):
             return
-        self.du_lieu.remove(lich)
+        ok, thong_diep = self.ql.huy_lich(ma)
+        if not ok:
+            messagebox.showwarning(config.TIEU_DE_APP, thong_diep, parent=self)
+            self.thong_bao(thong_diep)
+            return
+        self._nap_du_lieu()
         self.lam_moi_form()
         self.hien_thi()
         self.thong_bao(f"Đã hủy lịch {ma}")
