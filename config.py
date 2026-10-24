@@ -1,5 +1,3 @@
-"""Cấu hình toàn hệ thống phòng khám (Giao diện & Nghiệp vụ)"""
-
 TIEU_DE_APP = "Quản lý phòng khám"
 
 # Cửa sổ chính

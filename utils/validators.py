@@ -1,4 +1,3 @@
-"""Tiện ích xác thực dữ liệu, bảo mật và tìm kiếm tiếng Việt."""
 import calendar
 import hashlib
 import re
@@ -8,14 +7,9 @@ from datetime import date, datetime
 # ------------------------------------------------------------ Ngày tháng & năm nhuận
 
 def la_nam_nhuan(nam: int) -> bool:
-    """Trả về True nếu năm là năm nhuận (chia hết 4, trừ thế kỷ không chia hết 400)."""
     return (nam % 4 == 0 and nam % 100 != 0) or (nam % 400 == 0)
 
 def la_ngay_hop_le(ngay: int, thang: int, nam: int) -> bool:
-    """Kiểm tra ngày/tháng/năm có hợp lệ theo lịch Gregorian không.
-
-    Xử lý tháng 2 năm nhuận: VD 29/02/2024 hợp lệ, 30/02/2027 không hợp lệ.
-    """
     try:
         datetime(nam, thang, ngay)
         return True
@@ -23,12 +17,10 @@ def la_ngay_hop_le(ngay: int, thang: int, nam: int) -> bool:
         return False
 
 def so_thang_toi_da(nam: int, hom_nay: date = None) -> int:
-    """Tháng tối đa được chọn: nếu là năm hiện tại thì chỉ đến tháng hiện tại."""
     hom_nay = hom_nay or date.today()
     return hom_nay.month if nam == hom_nay.year else 12
 
 def so_ngay_toi_da(nam: int, thang: int, hom_nay: date = None) -> int:
-    """Ngày tối đa trong tháng, có tính năm nhuận và giới hạn theo ngày hiện tại."""
     hom_nay = hom_nay or date.today()
     if thang is None:
         ngay = 31
