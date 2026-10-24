@@ -1,0 +1,62 @@
+[
+  {
+    "ma_dinh_danh": "010120001",
+    "ho_ten": "Nguyễn Văn An",
+    "dia_chi": "78 Đường Hai Bà Trưng",
+    "tinh_thanh": "Hà Nội",
+    "xa_phuong": "Phường Tràng Tiền",
+    "gioi_tinh": "Nam",
+    "ngay_sinh": "1978-05-15",
+    "sdt": "0903123456",
+    "lich_lam_viec": ["T2_SANG", "T4_SANG", "T6_SANG"],
+    "luong_cb": 25000000
+  },
+  {
+    "ma_dinh_danh": "030222002",
+    "ho_ten": "Lê Thị Mai",
+    "dia_chi": "120 Nguyễn Văn Linh",
+    "tinh_thanh": "Đà Nẵng",
+    "xa_phuong": "Phường Nam Dương",
+    "gioi_tinh": "Nữ",
+    "ngay_sinh": "1988-11-20",
+    "sdt": "0918765432",
+    "lich_lam_viec": ["T3_CHIEU", "T5_CHIEU", "T7_SANG"],
+    "luong_cb": 18000000
+  },
+  {
+    "ma_dinh_danh": "020419003",
+    "ho_ten": "Trần Quang Vinh",
+    "dia_chi": "35 Lê Lợi",
+    "tinh_thanh": "TP.HCM",
+    "xa_phuong": "Phường Bến Nghé",
+    "gioi_tinh": "Nam",
+    "ngay_sinh": "1982-03-08",
+    "sdt": "0934567890",
+    "lich_lam_viec": ["T2_CHIEU", "T4_CHIEU", "T6_CHIEU"],
+    "luong_cb": 22000000
+  },
+  {
+    "ma_dinh_danh": "030321004",
+    "ho_ten": "Phạm Quốc Dũng",
+    "dia_chi": "56 Hùng Vương",
+    "tinh_thanh": "Hải Phòng",
+    "xa_phuong": "Phường Hoàng Văn Thụ",
+    "gioi_tinh": "Nam",
+    "ngay_sinh": "1985-09-12",
+    "sdt": "0945678901",
+    "lich_lam_viec": ["T3_SANG", "T5_SANG", "T7_CHIEU"],
+    "luong_cb": 19000000
+  },
+  {
+    "ma_dinh_danh": "010518005",
+    "ho_ten": "Hoàng Thu Hà",
+    "dia_chi": "90 Nguyễn Trãi",
+    "tinh_thanh": "Cần Thơ",
+    "xa_phuong": "Phường An Hội",
+    "gioi_tinh": "Nữ",
+    "ngay_sinh": "1980-06-25",
+    "sdt": "0976543210",
+    "lich_lam_viec": ["T2_SANG", "T3_SANG", "T5_SANG"],
+    "luong_cb": 24000000
+  }
+]
