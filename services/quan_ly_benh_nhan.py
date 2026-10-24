@@ -4,10 +4,8 @@ from models.benh_nhan import BenhNhan
 from services.json_store import JsonStore
 from utils.helpers import khop
 from utils.validators import la_ngay_hop_le, la_sdt_hop_le, la_ma_bhyt_hop_le, la_email_hop_le
+from config import FILE_BENH_NHAN
 
-FILE_LICH_HEN = "benh_nhan.json"
-
-# Ánh xạ mã tiêu chí sang tên thuộc tính của đối tượng BenhNhan
 _TRUONG_TIM = {
     "ho_ten": "ho_ten",
     "bhyt": "so_bhyt",
@@ -21,7 +19,7 @@ _TRUONG_TIM = {
 class QuanLyBenhNhan:
     """Quản lý danh sách bệnh nhân, thao tác CRUD và tìm kiếm gần đúng."""
 
-    def __init__(self, json_store = None, ten_file = "benh_nhan.json"):
+    def __init__(self, json_store = None, ten_file = FILE_BENH_NHAN):
         self.store = json_store or JsonStore()
         self.ten_file = ten_file
         self._danh_sach: list[BenhNhan] = []
@@ -30,6 +28,10 @@ class QuanLyBenhNhan:
     def nap_du_lieu(self):
         """Đọc danh sách bệnh nhân từ file JSON vào bộ nhớ."""
         danh_sach_raw = self.store.doc_file(self.ten_file)
+        if self.store.loi_cuoi:
+            pass
+
+
         self._danh_sach = []
         for d in danh_sach_raw:
             try:
