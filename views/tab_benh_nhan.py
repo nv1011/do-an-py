@@ -6,6 +6,7 @@ from datetime import date
 import config
 from services.quan_ly_benh_nhan import QuanLyBenhNhan
 from utils.validators import la_sdt_hop_le, la_ma_bhyt_hop_le, la_email_hop_le
+from views.dia_chi import DiaChi
 from views.widgets.date_picker import DatePicker
 
 # (khóa trong to_dict, tiêu đề cột, độ rộng)
@@ -24,16 +25,6 @@ DANH_SACH_GIOI_TINH = ["Nam", "Nữ", "Khác"]
 DANH_SACH_NHOM_MAU = ["A", "B", "AB", "O", "Chưa rõ"]
 CHO_TINH, CHO_XA = "Chọn tỉnh/thành", "Chọn phường/xã"
 
-# NỐI C: thay bằng API địa chỉ của C
-DANH_SACH_TINH = ["Hà Nội", "Đà Nẵng", "TP.HCM", "Hải Phòng", "Cần Thơ"]
-PHUONG_XA_MAU = {
-    "Hà Nội": ["Phường Hoàn Kiếm", "Phường Ba Đình", "Phường Cầu Giấy"],
-    "Đà Nẵng": ["Phường Hải Châu", "Phường Thanh Khê", "Phường Sơn Trà"],
-    "TP.HCM": ["Phường Bến Nghé", "Phường Bến Thành", "Phường Võ Thị Sáu"],
-    "Hải Phòng": ["Phường Hồng Bàng", "Phường Ngô Quyền", "Phường Lê Chân"],
-    "Cần Thơ": ["Phường Ninh Kiều", "Phường Cái Khế", "Phường An Hòa"],
-}
-
 
 def dinh_dang_ngay(chuoi_iso):
     """'1990-03-12' -> '12/03/1990'."""
@@ -41,11 +32,12 @@ def dinh_dang_ngay(chuoi_iso):
 
 
 class TabBenhNhan(ttk.Frame):
-    def __init__(self, parent, thong_bao=None, vai_tro="admin", quan_ly=None):
+    def __init__(self, parent, thong_bao=None, vai_tro="admin", quan_ly=None, dia_chi=None):
         super().__init__(parent)
         self.thong_bao = thong_bao or (lambda _s: None)
         self.vai_tro = vai_tro
         self.ql = quan_ly or QuanLyBenhNhan()
+        self.dia_chi = dia_chi or DiaChi()
         self.cac_nut_chi_admin = []
 
         self.var_tu_khoa = tk.StringVar()
@@ -68,6 +60,7 @@ class TabBenhNhan(ttk.Frame):
 
         self.hien_thi(self.ql.lay_tat_ca())
         self.ap_dung_phan_quyen()
+        self.after(200, self._nap_tinh)     # mở cửa sổ xong mới nạp danh sách
 
     # ------------------------------------------------------------ giao diện
     def _tao_thanh_tim_kiem(self):
@@ -146,7 +139,7 @@ class TabBenhNhan(ttk.Frame):
 
         nhan("Tỉnh/Thành *", 12, col=0, span=1)
         nhan("Phường/Xã *", 12, col=1, span=1)
-        self.cb_tinh = ttk.Combobox(form, values=DANH_SACH_TINH, state="readonly", width=16)
+        self.cb_tinh = ttk.Combobox(form, state="readonly", width=16)
         self.cb_tinh.grid(row=13, column=0, sticky="ew", padx=(0, 8))
         self.cb_tinh.bind("<<ComboboxSelected>>", lambda _e: self._khi_chon_tinh())
         self.cb_xa = ttk.Combobox(form, state="readonly", width=16)
@@ -177,14 +170,19 @@ class TabBenhNhan(ttk.Frame):
                 nut.state(["disabled"])
 
     # ------------------------------------------------------------ tỉnh / phường xã
+    def _nap_tinh(self):
+        self.cb_tinh["values"] = self.dia_chi.lay_danh_sach_tinh()
+        if self.dia_chi.dung_mau:
+            self.thong_bao(f"Đang dùng danh sách tỉnh mẫu ({self.dia_chi.loi})")
+
     def _khi_chon_tinh(self):
         """Đổi tỉnh thì danh sách phường/xã đổi theo và phải chọn lại phường/xã."""
         self._cap_nhat_xa(self.cb_tinh.get())
         self.cb_xa.set(CHO_XA)
 
     def _cap_nhat_xa(self, tinh, them=None):
-        """Nạp phường/xã của tỉnh; 'them' là giá trị đã lưu nhưng chưa có trong danh sách mẫu."""
-        ds = list(PHUONG_XA_MAU.get(tinh, []))
+        """Nạp phường/xã của tỉnh; 'them' là giá trị đã lưu nhưng chưa có trong danh sách."""
+        ds = self.dia_chi.lay_danh_sach_xa(tinh) if tinh else []
         if them and them not in ds:
             ds.append(them)
         self.cb_xa["values"] = ds

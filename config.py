@@ -65,3 +65,26 @@ CA_TRUC = {
 VAI_TRO_ADMIN = "admin"
 VAI_TRO_LE_TAN = "le_tan"
 DANH_SACH_VAI_TRO = [VAI_TRO_ADMIN, VAI_TRO_LE_TAN]
+
+# ---- Phần của C: đường dẫn, file dữ liệu, API địa chỉ ----
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+BACKUP_DIR = BASE_DIR / "backup"
+
+FILE_BENH_NHAN = DATA_DIR / "benh_nhan.json"
+FILE_BAC_SI = DATA_DIR / "bac_si.json"
+FILE_CHUYEN_KHOA = DATA_DIR / "chuyen_khoa.json"
+FILE_DICH_VU = DATA_DIR / "dich_vu.json"
+FILE_LICH_HEN = DATA_DIR / "lich_hen.json"
+FILE_PHIEU_KHAM = DATA_DIR / "phieu_kham.json"
+FILE_TAI_KHOAN = DATA_DIR / "tai_khoan.json"
+FILE_DIA_CHI = DATA_DIR / "dia_chi.json"
+
+API_DIA_CHI_URL = "https://tinhthanhpho.com/api/v1"
+API_TIMEOUT_GIAY = 10
+
+TEN_UNG_DUNG = "Quan ly lich kham phong kham"
+DINH_DANG_NGAY = "%d/%m/%Y"
+THOI_LUONG_KHAM_MAC_DINH = 30
