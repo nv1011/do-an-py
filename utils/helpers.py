@@ -4,62 +4,50 @@ import re
 import unicodedata
 from datetime import date
 
-# Hằng số năm nhỏ nhất cho bộ chọn ngày
 NAM_NHO_NHAT = 1900
 
 
 # ------------------------------------------------------------------ Tìm kiếm tiếng Việt
-def bo_dau(chuoi: str) -> str:
-    """'Nguyễn Đức' -> 'Nguyen Duc' (bỏ dấu tiếng Việt)."""
+def bo_dau(chuoi):
+    """Bỏ dấu tiếng Việt. VD: 'Nguyễn Đức' -> 'Nguyen Duc'."""      
     chuoi = chuoi.replace("đ", "d").replace("Đ", "D")  # đ không tách được bằng NFD
     phan_tach = unicodedata.normalize("NFD", chuoi)
     return "".join(c for c in phan_tach if unicodedata.category(c) != "Mn")
 
 
-def chuan_hoa(chuoi: str) -> str:
+def chuan_hoa(chuoi):
     """Bỏ dấu, viết thường, gộp khoảng trắng thừa."""
     return " ".join(bo_dau(chuoi).lower().split())
 
 
-def khop_ten(ten: str, tu_khoa: str) -> bool:
+def khop_ten(ten, tu_khoa):
     """Mỗi từ trong từ khóa phải là phần ĐẦU của một từ nào đó trong tên.
-
-    VD: 'an' -> khớp 'Nguyễn Văn An'; 'van an' -> khớp 'Nguyễn Văn An'.
+ 
+    VD: 'an' khớp 'Nguyễn Văn An'; 'van an' khớp 'Nguyễn Văn An'.
     """
     cac_tu_khoa = chuan_hoa(tu_khoa).split()
     cac_tu_ten = chuan_hoa(ten).split()
     return all(any(tu.startswith(tk) for tu in cac_tu_ten) for tk in cac_tu_khoa)
 
 
-def khop_chuoi(gia_tri: str, tu_khoa: str) -> bool:
+def khop_chuoi(gia_tri, tu_khoa):
     """Từ khóa nằm ở bất kỳ đâu trong giá trị (dùng cho mã, SĐT, BHYT)."""
     return chuan_hoa(tu_khoa) in chuan_hoa(gia_tri)
 
 
-def khop(khoa: str, gia_tri: str, tu_khoa: str) -> bool:
+def khop(khoa, gia_tri, tu_khoa):
     """Nếu khoa == 'ho_ten' thì so khớp theo từ; các trường khác so khớp theo chuỗi con."""
     if khoa == "ho_ten":
         return khop_ten(gia_tri, tu_khoa)
     return khop_chuoi(gia_tri, tu_khoa)
 
-
-# ------------------------------------------------------------------ Kiểm tra dữ liệu nhập
-def la_sdt_hop_le(sdt) -> bool:
-    """Số điện thoại di động Việt Nam: đúng 10 chữ số, bắt đầu bằng số 0."""
-    s = str(sdt).strip()
-    return bool(re.fullmatch(r"0\d{9}", s))
-
-
-def la_email_hop_le(email: str) -> bool:
-    """Dạng đơn giản: ten@ten-mien.duoi, không có khoảng trắng."""
-    return bool(re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", str(email).strip()))
-
-
 # ------------------------------------------------------------------ Chọn ngày (DatePicker)
-def so_thang_toi_da(nam, hom_nay: date = None, gioi_han_hom_nay: bool = True) -> int:
-    """Ngày sinh: năm hiện tại chỉ được chọn đến tháng hiện tại.
-
+def so_thang_toi_da(nam, hom_nay= None, gioi_han_hom_nay = True):
+    """Số tháng được chọn cho một năm.
+ 
+    Ngày sinh (gioi_han_hom_nay=True): năm hiện tại chỉ đến tháng hiện tại.
     Lịch hẹn (gioi_han_hom_nay=False): luôn 12 tháng.
+
     """
     if not gioi_han_hom_nay:
         return 12
@@ -67,7 +55,7 @@ def so_thang_toi_da(nam, hom_nay: date = None, gioi_han_hom_nay: bool = True) ->
     return hom_nay.month if nam == hom_nay.year else 12
 
 
-def so_ngay_toi_da(nam, thang, hom_nay: date = None, gioi_han_hom_nay: bool = True) -> int:
+def so_ngay_toi_da(nam, thang, hom_nay = None, gioi_han_hom_nay = True):
     """Số ngày được chọn cho (năm, tháng); nam/thang có thể là None nếu chưa chọn.
 
     - tháng 4, 6, 9, 11: 30 ngày; các tháng còn lại: 31 ngày
@@ -87,7 +75,7 @@ def so_ngay_toi_da(nam, thang, hom_nay: date = None, gioi_han_hom_nay: bool = Tr
 
 
 # ------------------------------------------------------------------ Giờ và lịch hẹn
-def danh_sach_gio(tu_gio: int = 7, den_gio: int = 18, buoc_phut: int = 15) -> list[str]:
+def danh_sach_gio(tu_gio = 7, den_gio = 18, buoc_phut = 15):
     """Tạo danh sách các mốc giờ khám bệnh (VD: ['07:00', '07:15', ...])."""
     return [
         f"{p // 60:02d}:{p % 60:02d}"
@@ -95,24 +83,27 @@ def danh_sach_gio(tu_gio: int = 7, den_gio: int = 18, buoc_phut: int = 15) -> li
     ]
 
 
-def gio_ra_phut(gio: str) -> int:
+def gio_ra_phut(gio):
     """Chuyển đổi chuỗi 'HH:MM' sang số phút tính từ 00:00."""
     gio_so, phut_so = gio.split(":")
     return int(gio_so) * 60 + int(phut_so)
 
 
-def phut_ra_gio(phut: int) -> str:
+def phut_ra_gio(phut):
     """Chuyển đổi số phút sang chuỗi 'HH:MM'."""
     return f"{phut // 60:02d}:{phut % 60:02d}"
 
 
-def gio_ket_thuc(gio_bat_dau: str, thoi_luong: int) -> str:
+def gio_ket_thuc(gio_bat_dau, thoi_luong):
     """Tính giờ kết thúc = giờ bắt đầu + thời lượng (phút)."""
     return phut_ra_gio(gio_ra_phut(gio_bat_dau) + thoi_luong)
 
-
-def tim_lich_trung(danh_sach: list[dict], ma_bac_si: str, ngay, gio_bat_dau: str, thoi_luong: int, bo_qua_ma: str = None) -> dict | None:
-    """Kiểm tra xung đột thời gian giữa các ca khám của cùng một bác sĩ trong ngày."""
+def tim_lich_trung(danh_sach, ma_bac_si, ngay, gio_bat_dau, thoi_luong, bo_qua_ma = None):
+    """Tìm lịch của cùng bác sĩ, cùng ngày có khung giờ giao nhau.
+ 
+    danh_sach là list các dict lịch hẹn; bo_qua_ma là mã lịch đang sửa (bỏ qua chính nó).
+    Trả về dict lịch bị trùng đầu tiên, hoặc None nếu không trùng.
+    """
     bd = gio_ra_phut(gio_bat_dau)
     kt = bd + thoi_luong
     for lich in danh_sach:
