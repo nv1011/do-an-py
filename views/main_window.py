@@ -1,50 +1,66 @@
-"""Cửa sổ chính: Menu + Notebook + thanh trạng thái
-
-Chạy thử bằng chay_thu_gui.py ở thư mục gốc phong_kham/.
-"""
+"""Cửa sổ chính: Menu + Notebook + thanh trạng thái."""
 import tkinter as tk
 from tkinter import ttk, messagebox
 
 import config
+from views import helpers
+from services.quan_ly_bac_si import QuanLyBacSi
+from services.quan_ly_benh_nhan import QuanLyBenhNhan
+from services.quan_ly_lich_hen import QuanLyLichHen
+from services.quan_ly_tai_khoan import QuanLyTaiKhoan
 from views.tab_benh_nhan import TabBenhNhan
+from views.tai_khoan_dialog import DialogDoiMatKhau, DialogTaoTaiKhoan
 from views.tab_lich_hen import TabLichHen
+from views.tab_phieu_kham import TabPhieuKham
+from views.tab_thong_ke import TabThongKe
+from views.du_lieu_gia import QuanLyPhieuKhamGia, ThongKeGia
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, ten_dang_nhap="admin", vai_tro="admin"):
+    def __init__(self, ten_dang_nhap, vai_tro, ql_benh_nhan=None, ql_bac_si=None,
+                 ql_lich_hen=None, ql_tai_khoan=None):
         super().__init__()
         self.ten_dang_nhap = ten_dang_nhap
-        self.vai_tro = vai_tro  # "admin" đủ quyền; "le_tan" chỉ đặt lịch, tìm kiếm, xem
-        self.ket_thuc = "thoat"  # "thoat" hoặc "dang_xuat": chay_thu_gui.py đọc để biết làm gì tiếp
+        self.vai_tro = vai_tro
+        self.ql_benh_nhan = ql_benh_nhan or QuanLyBenhNhan()
+        self.ql_bac_si = ql_bac_si or QuanLyBacSi()
+        self.ql_lich_hen = ql_lich_hen or QuanLyLichHen(quan_ly_bac_si=self.ql_bac_si)
+        self.ql_tai_khoan = ql_tai_khoan or QuanLyTaiKhoan()
+        self.ket_thuc = "thoat"
 
         self.title(config.TIEU_DE_APP)
-        self.geometry(config.KICH_THUOC_CUA_SO)
-        self.minsize(*config.KICH_THUOC_TOI_THIEU)
+        t = helpers.ty_le_man_hinh(self)
+        self.geometry(helpers.kich_thuoc(self, config.KICH_THUOC_CUA_SO))
+        self.minsize(*(int(x * t) for x in config.KICH_THUOC_TOI_THIEU))
         self.configure(bg=config.MAU_NEN)
         self.option_add("*Font", config.FONT_CHUNG)
 
-        self.tabs = {} # tên tab -> ttk.Frame, để các view gắn vào sau
+        self.tabs = {}
         self.trang_thai = tk.StringVar(value=f"Đăng nhập: {ten_dang_nhap} ({vai_tro})")
 
         self._tao_menu()
-        self._tao_thanh_trang_thai()   # pack side=bottom trước để luôn thấy khi thu nhỏ
+        self._tao_thanh_trang_thai()
         self._tao_notebook()
 
         self.protocol("WM_DELETE_WINDOW", self.thoat)
 
-    # ---------- Menu ------------
+    # ---------- Menu ----------
     def _tao_menu(self):
         thanh_menu = tk.Menu(self)
 
         menu_he_thong = tk.Menu(thanh_menu, tearoff=0)
+        menu_he_thong.add_command(label="Đổi mật khẩu", command=self.doi_mat_khau)
+        if self.vai_tro == config.VAI_TRO_ADMIN:
+            menu_he_thong.add_command(label="Tạo tài khoản", command=self.tao_tai_khoan)
         menu_he_thong.add_command(label="Đăng xuất", command=self.dang_xuat)
         menu_he_thong.add_separator()
         menu_he_thong.add_command(label="Thoát", command=self.thoat)
         thanh_menu.add_cascade(label="Hệ thống", menu=menu_he_thong)
 
-        menu_bao_cao = tk.Menu(thanh_menu, tearoff=0)
-        menu_bao_cao.add_command(label="Xuất báo cáo", command=self._chua_co)
-        thanh_menu.add_cascade(label="Báo cáo", menu=menu_bao_cao)
+        if self.vai_tro == "admin":
+            menu_bao_cao = tk.Menu(thanh_menu, tearoff=0)
+            menu_bao_cao.add_command(label="Xuất báo cáo", command=self._xuat_bao_cao)
+            thanh_menu.add_cascade(label="Báo cáo", menu=menu_bao_cao)
 
         menu_tro_giup = tk.Menu(thanh_menu, tearoff=0)
         menu_tro_giup.add_command(label="Giới thiệu", command=self._gioi_thieu)
@@ -52,34 +68,59 @@ class MainWindow(tk.Tk):
 
         self.config(menu=thanh_menu)
 
-    # --------------- Notebook -------------
+    # ---------- Notebook ----------
     def _tao_notebook(self):
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(fill="both", expand=True, padx=8, pady=(8, 0))
 
         for ten in config.DANH_SACH_TAB:
+            if ten == "Thống kê" and self.vai_tro != "admin":
+                continue   # lễ tân không xem thống kê
             frame = ttk.Frame(self.notebook)
             self.notebook.add(frame, text=ten)
             self.tabs[ten] = frame
 
-        # Tab đã có view thật
         TabBenhNhan(self.tabs["Bệnh nhân"], thong_bao=self.trang_thai.set,
-                   vai_tro=self.vai_tro).pack(fill="both", expand=True)
+                   vai_tro=self.vai_tro, quan_ly=self.ql_benh_nhan).pack(fill="both", expand=True)
 
-        TabLichHen(self.tabs["Lịch hẹn"], thong_bao=self.trang_thai.set,
-                   vai_tro=self.vai_tro).pack(fill="both", expand=True)
+        TabLichHen(self.tabs["Lịch hẹn"], thong_bao=self.trang_thai.set, vai_tro=self.vai_tro,
+                   ql_benh_nhan=self.ql_benh_nhan, ql_bac_si=self.ql_bac_si,
+                   ql_lich_hen=self.ql_lich_hen).pack(fill="both", expand=True)
 
-        # Các tab chưa làm: khung giữ chỗ
-        for ten in ("Phiếu khám", "Thống kê"):
-            ttk.Label(self.tabs[ten], text=f"Tab {ten} (đang phát triển)").pack(expand=True)
+        # NỐI A: thay QuanLyPhieuKhamGia, ThongKeGia bằng QuanLyPhieuKham, ThongKe khi A xong
+        self.ql_phieu = QuanLyPhieuKhamGia()
+        self.tab_phieu_kham = TabPhieuKham(
+            self.tabs["Phiếu khám"], thong_bao=self.trang_thai.set, vai_tro=self.vai_tro,
+            quan_ly=self.ql_phieu, ql_benh_nhan=self.ql_benh_nhan, ql_bac_si=self.ql_bac_si)
+        self.tab_phieu_kham.pack(fill="both", expand=True)
 
-    # ------------- Thanh trạng thái -------------
+        self.tab_thong_ke = None
+        if "Thống kê" in self.tabs:
+            self.tab_thong_ke = TabThongKe(
+                self.tabs["Thống kê"], thong_bao=self.trang_thai.set,
+                thong_ke=ThongKeGia(self.ql_phieu, self.ql_bac_si))
+            self.tab_thong_ke.pack(fill="both", expand=True)
+
+        self.notebook.bind("<<NotebookTabChanged>>", self._khi_doi_tab)
+
+    def _khi_doi_tab(self, _e=None):
+        ten = self.notebook.tab(self.notebook.select(), "text")
+        if ten == "Phiếu khám":
+            self.tab_phieu_kham.lam_moi()
+        elif ten == "Thống kê" and self.tab_thong_ke:
+            self.tab_thong_ke.cap_nhat()
+
+    def _xuat_bao_cao(self):
+        if self.tab_thong_ke:
+            self.tab_thong_ke.xuat_bao_cao()
+
+    # ---------- Thanh trạng thái ----------
     def _tao_thanh_trang_thai(self):
         ttk.Label(
             self, textvariable=self.trang_thai, relief="sunken", anchor="w", padding=(8, 3)
         ).pack(side="bottom", fill="x")
 
-    # ----------- Lệnh ------------
+    # ---------- Lệnh ----------
     def _chua_co(self):
         messagebox.showinfo(config.TIEU_DE_APP, "Chức năng này chưa có.", parent=self)
 
@@ -87,6 +128,12 @@ class MainWindow(tk.Tk):
         messagebox.showinfo(
             config.TIEU_DE_APP, "Ứng dụng quản lý phòng khám nhỏ\nPython + Tkinter", parent=self
         )
+
+    def doi_mat_khau(self):
+        DialogDoiMatKhau(self, self.ten_dang_nhap, self.ql_tai_khoan)
+
+    def tao_tai_khoan(self):
+        DialogTaoTaiKhoan(self, self.ql_tai_khoan, self.ten_dang_nhap)
 
     def dang_xuat(self):
         if messagebox.askyesno(config.TIEU_DE_APP, "Bạn có chắc muốn đăng xuất?", parent=self):

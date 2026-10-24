@@ -6,12 +6,13 @@
     "tinh_thanh": "Hà Nội",
     "xa_phuong": "Phường Dịch Vọng",
     "gioi_tinh": "Nam",
-    "ngay_sinh": "1990-03-12",
+    "ngay_sinh": "1990-10-12",
     "sdt": "0912345678",
     "so_bhyt": "4010123456789",
+    "email": "nguyenvanan@gmail.com",
     "tien_su_benh": "Viêm loét dạ dày",
     "nhom_mau": "O",
-    "email": "nguyenvanan@gmail.com"
+    "ngay_dang_ky": "2026-10-12"
   },
   {
     "ma_dinh_danh": "12102026000002",
@@ -23,9 +24,10 @@
     "ngay_sinh": "1985-07-25",
     "sdt": "0987654321",
     "so_bhyt": "4010987654321",
+    "email": "binh.tran@mail.com",
     "tien_su_benh": "Tăng huyết áp nhẹ",
     "nhom_mau": "A",
-    "email": "binh.tran@mail.com"
+    "ngay_dang_ky": "2026-10-12"
   },
   {
     "ma_dinh_danh": "12102026000003",
@@ -37,9 +39,10 @@
     "ngay_sinh": "2001-11-03",
     "sdt": "0901122334",
     "so_bhyt": "4011122233344",
+    "email": "minhchau@gmail.com",
     "tien_su_benh": "Dị ứng hải sản",
     "nhom_mau": "B",
-    "email": "minhchau@gmail.com"
+    "ngay_dang_ky": "2026-10-12"
   },
   {
     "ma_dinh_danh": "12102026000004",
@@ -51,9 +54,10 @@
     "ngay_sinh": "1978-05-18",
     "sdt": "0934455667",
     "so_bhyt": "4015566778899",
+    "email": "quocdung@gmail.com",
     "tien_su_benh": "Không có",
     "nhom_mau": "AB",
-    "email": "quocdung@gmail.com"
+    "ngay_dang_ky": "2026-10-12"
   },
   {
     "ma_dinh_danh": "12102026000005",
@@ -65,9 +69,10 @@
     "ngay_sinh": "1995-09-30",
     "sdt": "0977788990",
     "so_bhyt": "4017788990011",
+    "email": "thuha95@gmail.com",
     "tien_su_benh": "Viêm xoang mãn tính",
     "nhom_mau": "O",
-    "email": "thuha95@gmail.com"
+    "ngay_dang_ky": "2026-10-12"
   },
   {
     "ma_dinh_danh": "12102026000006",
@@ -79,9 +84,10 @@
     "ngay_sinh": "1969-02-09",
     "sdt": "0966677889",
     "so_bhyt": "4016677889900",
+    "email": "duchuy69@gmail.com",
     "tien_su_benh": "Tiểu đường tuýp 2",
     "nhom_mau": "A",
-    "email": "duchuy69@gmail.com"
+    "ngay_dang_ky": "2026-10-12"
   },
   {
     "ma_dinh_danh": "12102026000007",
@@ -93,9 +99,10 @@
     "ngay_sinh": "2003-12-21",
     "sdt": "0955566778",
     "so_bhyt": "4015566778800",
+    "email": "mylinh2003@gmail.com",
     "tien_su_benh": "Không có",
     "nhom_mau": "O",
-    "email": "mylinh2003@gmail.com"
+    "ngay_dang_ky": "2026-10-12"
   },
   {
     "ma_dinh_danh": "12102026000008",
@@ -107,8 +114,9 @@
     "ngay_sinh": "1999-08-14",
     "sdt": "0944455667",
     "so_bhyt": "4014455667711",
+    "email": "anhkhoa99@gmail.com",
     "tien_su_benh": "Không có",
     "nhom_mau": "B",
-    "email": "anhkhoa99@gmail.com"
+    "ngay_dang_ky": "2026-10-12"
   }
 ]

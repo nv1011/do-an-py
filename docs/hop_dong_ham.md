@@ -51,6 +51,15 @@ Hệ thống chốt **2 vai trò duy nhất**: `admin` và `le_tan`.
 - Thành viên B **import trực tiếp các hàm kiểm tra từ `utils/validators.py`** (`la_sdt_hop_le`, `la_ma_bhyt_hop_le`, `la_ngay_hop_le`, `la_email_hop_le`) để kiểm tra dữ liệu trực tiếp trên form giao diện.
 - Tránh việc tự viết hoặc copy lại các biểu thức Regex, giúp đảm bảo tính đồng bộ tuyệt đối khi có thay đổi nghiệp vụ.
 
+### 1.5. Viết Docstring cho hàm
+Mọi hàm trong tầng Service đều phải viết docstring ngay dưới dòng khai báo def để mô tả chi tiết chức năng, tham số và giá trị trả về
+*Ví dụ:*
+```python
+def ten_ham(tham_so):
+    """Mô tả ngắn gọn chức năng của hàm. VD: 'Kiểm tra tính hợp lệ của...'."""
+    # Nội dung hàm...
+```
+
 ---
 
 ## 2. CHI TIẾT HỢP ĐỒNG CÁC LỚP QUẢN LÝ (SERVICES)
@@ -60,13 +69,13 @@ Hệ thống chốt **2 vai trò duy nhất**: `admin` và `le_tan`.
 | Tên hàm & Tham số | Kiểu trả về | Mô tả & Lưu ý |
 | :--- | :--- | :--- |
 | `lay_tat_ca()` | `list[BenhNhan]` | Lấy danh sách toàn bộ bệnh nhân từ bộ nhớ/file JSON |
-| `tim_theo_ma(ma: str)` | `BenhNhan \| None` | Tìm chính xác bệnh nhân theo mã định danh (14 số) |
-| `tim_kiem(tu_khoa: str = "", tieu_chi: str = "ho_ten", ho_ten: str = None, so_bhyt: str = None, **tieu_chi_khac)` | `list[BenhNhan]` | Tìm kiếm tiếng Việt không dấu. Hỗ trợ 2 tiêu chí cốt lõi: **Họ tên (`ho_ten`)** và **Số BHYT (`bhyt`/`so_bhyt`)**, kèm các tiêu chí mở rộng (`sdt`, `ma`). Hỗ trợ cả tìm đơn tiêu chí lẫn kết hợp đa tiêu chí |
-| `tim_kiem_ket_hop(ho_ten: str = "", so_bhyt: str = "", sdt: str = "", ma: str = "")` | `list[BenhNhan]` | Tìm kiếm kết hợp đồng thời nhiều tiêu chí (ít nhất 2 tiêu chí bắt buộc hỗ trợ: Họ tên và Số BHYT, lọc theo điều kiện AND) |
+| `tim_theo_ma(ma)` | `BenhNhan \| None` | Tìm chính xác bệnh nhân theo mã định danh (14 số) |
+| `tim_kiem(tu_khoa = "", tieu_chi = "ho_ten", ho_ten = None, so_bhyt = None, **tieu_chi_khac)` | `list[BenhNhan]` | Tìm kiếm tiếng Việt không dấu. Hỗ trợ 2 tiêu chí cốt lõi: **Họ tên (`ho_ten`)** và **Số BHYT (`bhyt`/`so_bhyt`)**, kèm các tiêu chí mở rộng (`sdt`, `ma`). Hỗ trợ cả tìm đơn tiêu chí lẫn kết hợp đa tiêu chí |
+| `tim_kiem_ket_hop(ho_ten = "", so_bhyt = "", sdt = "", ma = "")` | `list[BenhNhan]` | Tìm kiếm kết hợp đồng thời nhiều tiêu chí (ít nhất 2 tiêu chí bắt buộc hỗ trợ: Họ tên và Số BHYT, lọc theo điều kiện AND) |
 | `them(du_lieu: dict)` | `tuple[bool, str, BenhNhan \| None]` | Thêm bệnh nhân mới. Tự động kiểm tra trùng `ma_dinh_danh`, `sdt`, validate regex SĐT `0\d{9}` và email |
-| `sua(ma: str, du_lieu_moi: dict)` | `tuple[bool, str]` | Cập nhật thông tin bệnh nhân có mã `ma`. Quyền: Chỉ `admin` |
-| `xoa(ma: str)` | `tuple[bool, str]` | Xóa bệnh nhân. Quyền: Chỉ `admin`. Phải kiểm tra ràng buộc: không xóa nếu bệnh nhân đang có lịch hẹn hoặc phiếu khám chưa kết thúc |
-| `sinh_ma_moi(ngay_dang_ky: date = None)` | `str` | Sinh mã bệnh nhân 14 số tự động: 8 số đầu là `DDMMYYYY` của ngày đăng ký, 6 số sau là số thứ tự tăng dần trong ngày |
+| `sua(ma, du_lieu_moi)` | `tuple[bool, str]` | Cập nhật thông tin bệnh nhân có mã `ma`. Quyền: Chỉ `admin` |
+| `xoa(ma)` | `tuple[bool, str]` | Xóa bệnh nhân. Quyền: Chỉ `admin`. Phải kiểm tra ràng buộc: không xóa nếu bệnh nhân đang có lịch hẹn hoặc phiếu khám chưa kết thúc |
+| `sinh_ma_moi(ngay_dang_ky = None)` | `str` | Sinh mã bệnh nhân 14 số tự động: 8 số đầu là `DDMMYYYY` của ngày đăng ký, 6 số sau là số thứ tự tăng dần trong ngày |
 
 ---
 
@@ -75,11 +84,11 @@ Hệ thống chốt **2 vai trò duy nhất**: `admin` và `le_tan`.
 | Tên hàm & Tham số | Kiểu trả về | Mô tả & Lưu ý |
 | :--- | :--- | :--- |
 | `lay_tat_ca()` | `list[BacSi]` | Lấy toàn bộ danh sách bác sĩ |
-| `tim_theo_ma(ma: str)` | `BacSi \| None` | Tìm bác sĩ theo mã định danh 9 số |
-| `lay_theo_chuyen_khoa(ma_khoa: str)` | `list[BacSi]` | Lấy danh sách bác sĩ thuộc một chuyên khoa cụ thể |
-| `them(du_lieu: dict)` | `tuple[bool, str, BacSi \| None]` | Thêm bác sĩ mới. Tự động kiểm tra trùng mã 9 số |
-| `sua(ma: str, du_lieu_moi: dict)` | `tuple[bool, str]` | Sửa thông tin bác sĩ |
-| `xoa(ma: str)` | `tuple[bool, str]` | Xóa bác sĩ (kiểm tra không xóa nếu đang có lịch hẹn đang chờ) |
+| `tim_theo_ma(ma)` | `BacSi \| None` | Tìm bác sĩ theo mã định danh 9 số |
+| `lay_theo_chuyen_khoa(ma_khoa)` | `list[BacSi]` | Lấy danh sách bác sĩ thuộc một chuyên khoa cụ thể |
+| `them(du_lieu)` | `tuple[bool, str, BacSi \| None]` | Thêm bác sĩ mới. Tự động kiểm tra trùng mã 9 số |
+| `sua(ma, du_lieu_moi)` | `tuple[bool, str]` | Sửa thông tin bác sĩ |
+| `xoa(ma)` | `tuple[bool, str]` | Xóa bác sĩ (kiểm tra không xóa nếu đang có lịch hẹn đang chờ) |
 
 ---
 
@@ -88,9 +97,9 @@ Hệ thống chốt **2 vai trò duy nhất**: `admin` và `le_tan`.
 | Tên hàm & Tham số | Kiểu trả về | Mô tả & Lưu ý |
 | :--- | :--- | :--- |
 | `lay_tat_ca()` | `list[LichHen]` | Lấy toàn bộ lịch hẹn |
-| `loc_lich_hen(ngay: date = None, ma_bac_si: str = None)` | `list[LichHen]` | Lọc lịch hẹn phục vụ hiển thị Treeview và Thẻ lịch hẹn (AppointmentCard) trên Tab Lịch hẹn |
-| `lay_danh_sach_bac_si_ranh(ngay: date, gio_bat_dau: str, thoi_luong: int, ma_khoa: str = None)` | `list[BacSi]` | Lấy danh sách các bác sĩ có lịch trực trong buổi đó và **chưa bị trùng lịch hẹn** trong khung giờ yêu cầu |
-| `kiem_tra_trung_lich(ma_bac_si: str, ngay: date, gio_bat_dau: str, thoi_luong: int, ma_lich_hen_bo_qua: str = None)` | `tuple[bool, str]` | Trả về `(True, "Trùng lịch...")` nếu bác sĩ đã có lịch hẹn giao nhau thời gian; trả về `(False, "")` nếu rảnh. **Bỏ qua lịch `Da_huy`, `Vang` và chính mã lịch đang chỉnh sửa** |
+| `loc_lich_hen(ngay = None, ma_bac_si = None)` | `list[LichHen]` | Lọc lịch hẹn phục vụ hiển thị Treeview và Thẻ lịch hẹn (AppointmentCard) trên Tab Lịch hẹn |
+| `lay_danh_sach_bac_si_ranh(ngay, gio_bat_dau, thoi_luong, ma_khoa = None)` | `list[BacSi]` | Lấy danh sách các bác sĩ có lịch trực trong buổi đó và **chưa bị trùng lịch hẹn** trong khung giờ yêu cầu |
+| `kiem_tra_trung_lich(ma_bac_si, ngay, gio_bat_dau, thoi_luong, ma_lich_hen_bo_qua = None)` | `tuple[bool, str]` | Trả về `(True, "Trùng lịch...")` nếu bác sĩ đã có lịch hẹn giao nhau thời gian; trả về `(False, "")` nếu rảnh. **Bỏ qua lịch `Da_huy`, `Vang` và chính mã lịch đang chỉnh sửa** |
 | `dat_lich(du_lieu: dict)` | `tuple[bool, str, LichHen \| None]` | Đặt lịch hẹn mới. **Bắt buộc kiểm tra `ngay >= date.today()`** và gọi `kiem_tra_trung_lich` trước khi lưu |
 | `sua_lich(ma: str, du_lieu_moi: dict)` | `tuple[bool, str]` | Sửa thông tin lịch hẹn (kiểm tra trùng lịch có trừ chính mã này ra) |
 | `huy_lich(ma: str, ly_do: str = "")` | `tuple[bool, str]` | Chuyển trạng thái lịch hẹn sang `"Da_huy"`. Giải phóng khung giờ để người khác có thể đặt |
