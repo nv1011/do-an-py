@@ -14,6 +14,30 @@ FONT_TIEU_DE = ("Segoe UI", 12, "bold")
 MAU_NEN = "#f1f1f1"
 MAU_NHAN_MANH = "#cfe2f3"
 MAU_LOI = "#c0392b"
+MAU_NEN_LOI = "#fbeceb"
+MAU_CHU_PHU = "#555555"
+MAU_CHU_MO = "#777777"
+MAU_VIEN = "#444444"
+MAU_VIEN_CHON = "#2e6bb0"
+
+# Font phụ
+FONT_DAM = ("Segoe UI", 10, "bold")
+FONT_TONG_TIEN = ("Segoe UI", 12, "bold")
+
+# Cửa sổ đăng nhập
+KICH_THUOC_DANG_NHAP = "640x560"
+
+# Thẻ lịch hẹn (AppointmentCard)
+THE_RONG = 215
+THE_CAO = 130
+
+# Biểu đồ Canvas (tab Thống kê)
+BIEU_DO_CAO = 230
+MAU_BIEU_DO_NEN = "#fcfcfb"
+MAU_BIEU_DO_CHU = "#0b0b0b"
+MAU_BIEU_DO_CHU_PHU = "#52514e"
+MAU_BIEU_DO_LUOI = "#e3e2df"
+MAU_BIEU_DO = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"]
 
 # Thứ tự các tab trong Notebook
 DANH_SACH_TAB = ["Bệnh nhân", "Lịch hẹn", "Phiếu khám", "Thống kê"]

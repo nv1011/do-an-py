@@ -225,3 +225,5 @@ backup/*
 
 # Du lieu chay thu cua tung may
 data/*.local.json
+/.vs
+.vs/

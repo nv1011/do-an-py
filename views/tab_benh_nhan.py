@@ -1,36 +1,30 @@
-"""Tab Bệnh nhân: tìm kiếm + bảng Treeview + form thông tin
-
-- BẮT BUỘC: họ tên, ngày sinh, giới tính, SĐT (đúng 10 chữ số), địa chỉ (số nhà, đường),
-  tỉnh/thành, phường/xã. (Mã bệnh nhân do hệ thống tạo: 14 chữ số, 8 số đầu là ngày.)
-- KHÔNG BẮT BUỘC: mã BHYT (để trống thì lưu "Không có"), email (chỉ kiểm tra khi có nhập),
-  nhóm máu, tiền sử bệnh.
-
-Hiện dùng DỮ LIỆU GIẢ lưu trong `self.du_lieu`
-"""
+"""Tab Bệnh nhân: tìm kiếm, bảng và form thông tin (nối QuanLyBenhNhan của A)."""
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date
 
 import config
-from views import helpers
+from services.quan_ly_benh_nhan import QuanLyBenhNhan
+from utils.validators import la_sdt_hop_le, la_ma_bhyt_hop_le, la_email_hop_le
 from views.widgets.date_picker import DatePicker
 
-# khóa, tiêu đề cột, độ rộng
+# (khóa trong to_dict, tiêu đề cột, độ rộng)
 CAC_COT = [
-    ("ma", "Mã", 125),
+    ("ma_dinh_danh", "Mã", 125),
     ("ho_ten", "Họ tên", 160),
     ("ngay_sinh", "Ngày sinh", 90),
     ("sdt", "SĐT", 95),
-    ("bhyt", "Mã BHYT", 140),
-    ("tinh", "Tỉnh/Thành", 95),
+    ("so_bhyt", "Mã BHYT", 140),
+    ("tinh_thanh", "Tỉnh/Thành", 95),
 ]
 
 TIM_THEO = {"Họ tên": "ho_ten", "Mã": "ma", "SĐT": "sdt", "Mã BHYT": "bhyt"}
 
 DANH_SACH_GIOI_TINH = ["Nam", "Nữ", "Khác"]
-DANH_SACH_NHOM_MAU = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+DANH_SACH_NHOM_MAU = ["A", "B", "AB", "O", "Chưa rõ"]
 CHO_TINH, CHO_XA = "Chọn tỉnh/thành", "Chọn phường/xã"
 
+# NỐI C: thay bằng API địa chỉ của C
 DANH_SACH_TINH = ["Hà Nội", "Đà Nẵng", "TP.HCM", "Hải Phòng", "Cần Thơ"]
 PHUONG_XA_MAU = {
     "Hà Nội": ["Phường Hoàn Kiếm", "Phường Ba Đình", "Phường Cầu Giấy"],
@@ -40,43 +34,23 @@ PHUONG_XA_MAU = {
     "Cần Thơ": ["Phường Ninh Kiều", "Phường Cái Khế", "Phường An Hòa"],
 }
 
-# Dữ liệu giả. Mã bệnh nhân đúng định dạng: 14 chữ số, 8 số đầu là ngày.
-KHOA_DU_LIEU = ("ma", "ho_ten", "ngay_sinh", "sdt", "bhyt", "tinh", "xa_phuong",
-                "dia_chi", "gioi_tinh", "email", "nhom_mau", "tien_su")
-DU_LIEU_GIA = [
-    ("05102026000001", "Nguyễn Văn An", "12/03/1990", "0912345678", "HN4010123456789", "Hà Nội",
-     "Phường Hoàn Kiếm", "12 Hàng Bạc", "Nam", "an.nguyen@mail.com", "O+", ""),
-    ("05102026000002", "Trần Thị Bình", "25/07/1985", "0987654321", "DN4010987654321", "Đà Nẵng",
-     "Phường Hải Châu", "45 Bạch Đằng", "Nữ", "binh.tran@mail.com", "A+", "Viêm dạ dày"),
-    ("06102026000003", "Lê Minh Châu", "03/11/2001", "0901122334", "HC4011122233344", "TP.HCM",
-     "Phường Bến Nghé", "8 Lê Lợi", "Nữ", "chau.le@mail.com", "B+", ""),
-    ("07102026000004", "Phạm Quốc Dũng", "18/05/1978", "0934455667", "HP4015566778899", "Hải Phòng",
-     "Phường Ngô Quyền", "23 Lạch Tray", "Nam", "dung.pham@mail.com", "AB+", "Tiểu đường"),
-    ("08102026000005", "Hoàng Thu Hà", "30/09/1995", "0977788990", "CT4017788990011", "Cần Thơ",
-     "Phường Ninh Kiều", "77 Hòa Bình", "Nữ", "ha.hoang@mail.com", "O-", ""),
-    ("09102026000006", "Vũ Đức Huy", "09/02/1969", "0966677889", "HN4016677889900", "Hà Nội",
-     "Phường Ba Đình", "5 Đội Cấn", "Nam", "huy.vu@mail.com", "A-", "Cao huyết áp"),
-    ("12102026000007", "Đặng Mỹ Linh", "21/12/2003", "0955566778", "DN4015566778800", "Đà Nẵng",
-     "Phường Sơn Trà", "19 Ngô Quyền", "Nữ", "", "B-", ""),
-    ("12102026000008", "Bùi Anh Khoa", "14/08/1999", "0944455667", "HC4014455667711", "TP.HCM",
-     "Phường Bến Thành", "102 Nguyễn Huệ", "Nam", "khoa.bui@mail.com", "O+", ""),
-]
+
+def dinh_dang_ngay(chuoi_iso):
+    """'1990-03-12' -> '12/03/1990'."""
+    return date.fromisoformat(chuoi_iso).strftime("%d/%m/%Y")
 
 
 class TabBenhNhan(ttk.Frame):
-    def __init__(self, parent, thong_bao=None, vai_tro="admin"):
-        """thong_bao: hàm nhận 1 chuỗi để hiện lên thanh trạng thái (có thể bỏ trống).
-        vai_tro: "admin" dùng đủ chức năng; "le_tan" chỉ được tìm kiếm và xem."""
+    def __init__(self, parent, thong_bao=None, vai_tro="admin", quan_ly=None):
         super().__init__(parent)
         self.thong_bao = thong_bao or (lambda _s: None)
         self.vai_tro = vai_tro
-        self.cac_nut_sua_doi = []  # Thêm, Sửa, Xóa: le_tan không được dùng
-
-        self.du_lieu = [dict(zip(KHOA_DU_LIEU, dong)) for dong in DU_LIEU_GIA]
+        self.ql = quan_ly or QuanLyBenhNhan()
+        self.cac_nut_chi_admin = []
 
         self.var_tu_khoa = tk.StringVar()
         self.var_ho_ten = tk.StringVar()
-        self.var_gioi_tinh = tk.StringVar(value="")   # chưa chọn: bắt buộc phải chọn
+        self.var_gioi_tinh = tk.StringVar(value="")
         self.var_sdt = tk.StringVar()
         self.var_bhyt = tk.StringVar()
         self.var_email = tk.StringVar()
@@ -86,13 +60,13 @@ class TabBenhNhan(ttk.Frame):
         self._tao_thanh_tim_kiem()
         khung_chinh = ttk.Frame(self)
         khung_chinh.pack(fill="both", expand=True, padx=10, pady=(0, 10))
-        khung_chinh.columnconfigure(0, weight=1)  # bảng giãn theo cửa sổ
-        khung_chinh.columnconfigure(1, weight=0)  # form giữ độ rộng cố định
+        khung_chinh.columnconfigure(0, weight=1)
+        khung_chinh.columnconfigure(1, weight=0)
         khung_chinh.rowconfigure(0, weight=1)
         self._tao_bang(khung_chinh).grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         self._tao_form(khung_chinh).grid(row=0, column=1, sticky="ns")
 
-        self.hien_thi(self.du_lieu)
+        self.hien_thi(self.ql.lay_tat_ca())
         self.ap_dung_phan_quyen()
 
     # ------------------------------------------------------------ giao diện
@@ -130,7 +104,7 @@ class TabBenhNhan(ttk.Frame):
         return khung
 
     def _tao_form(self, cha):
-        form = ttk.LabelFrame(cha, text="Thông tin bệnh nhân *", padding=12)
+        form = ttk.LabelFrame(cha, text="Thông tin bệnh nhân (* là bắt buộc)", padding=12)
         form.columnconfigure(0, weight=1, uniform="cot")
         form.columnconfigure(1, weight=1, uniform="cot")
 
@@ -182,7 +156,7 @@ class TabBenhNhan(ttk.Frame):
         ttk.Entry(form, textvariable=self.var_tien_su).grid(
             row=15, column=0, columnspan=2, sticky="ew")
 
-        form.rowconfigure(16, weight=1)   # đẩy hàng nút xuống đáy form
+        form.rowconfigure(16, weight=1)
         khung_nut = ttk.Frame(form)
         khung_nut.grid(row=17, column=0, columnspan=2, sticky="ew", pady=(18, 0))
         for i, (chu, lenh) in enumerate([("Thêm", self.them), ("Sửa", self.sua),
@@ -190,16 +164,16 @@ class TabBenhNhan(ttk.Frame):
             khung_nut.columnconfigure(i, weight=1, uniform="nut")
             nut = ttk.Button(khung_nut, text=chu, command=lenh)
             nut.grid(row=0, column=i, sticky="ew", padx=2)
-            if chu in ("Thêm", "Sửa", "Xóa"):
-                self.cac_nut_sua_doi.append(nut)
+            if chu in ("Sửa", "Xóa"):
+                self.cac_nut_chi_admin.append(nut)
 
         self._xoa_form()
         return form
 
     def ap_dung_phan_quyen(self):
-        """Khóa các nút Thêm/Sửa/Xóa nếu không phải admin."""
+        """Lễ tân được thêm bệnh nhân; chỉ admin được sửa, xóa."""
         if self.vai_tro != "admin":
-            for nut in self.cac_nut_sua_doi:
+            for nut in self.cac_nut_chi_admin:
                 nut.state(["disabled"])
 
     # ------------------------------------------------------------ tỉnh / phường xã
@@ -208,45 +182,47 @@ class TabBenhNhan(ttk.Frame):
         self._cap_nhat_xa(self.cb_tinh.get())
         self.cb_xa.set(CHO_XA)
 
-    def _cap_nhat_xa(self, tinh):
-        self.cb_xa["values"] = PHUONG_XA_MAU.get(tinh, [])
+    def _cap_nhat_xa(self, tinh, them=None):
+        """Nạp phường/xã của tỉnh; 'them' là giá trị đã lưu nhưng chưa có trong danh sách mẫu."""
+        ds = list(PHUONG_XA_MAU.get(tinh, []))
+        if them and them not in ds:
+            ds.append(them)
+        self.cb_xa["values"] = ds
 
-    # ------------------------------------------------------ hiển thị
+    # ------------------------------------------------------------ hiển thị
     def hien_thi(self, danh_sach):
         self.tree.delete(*self.tree.get_children())
-        for b in danh_sach:
-            self.tree.insert("", "end", iid=b["ma"],
-                             values=tuple(b[khoa] for khoa, _t, _r in CAC_COT))
+        for bn in danh_sach:
+            d = bn.to_dict()
+            d["ngay_sinh"] = dinh_dang_ngay(d["ngay_sinh"])
+            self.tree.insert("", "end", iid=d["ma_dinh_danh"],
+                             values=tuple(d[khoa] for khoa, _t, _r in CAC_COT))
 
     def _khi_chon_dong(self, _event):
         ma = self._ma_dang_chon()
-        b = self._tim_theo_ma(ma) if ma else None
-        if not b:
+        bn = self.ql.tim_theo_ma(ma) if ma else None
+        if not bn:
             return
-        self.var_ho_ten.set(b["ho_ten"])
-        self.chon_ngay_sinh.set(b["ngay_sinh"])
-        self.var_gioi_tinh.set(b["gioi_tinh"])
-        self.cb_nhom_mau.set(b["nhom_mau"])
-        self.var_sdt.set(b["sdt"])
-        self.var_bhyt.set("" if b["bhyt"] == "Không có" else b["bhyt"])
-        self.var_email.set(b["email"])
-        self.var_dia_chi.set(b["dia_chi"])
-        self.cb_tinh.set(b["tinh"])
-        self._cap_nhat_xa(b["tinh"])
-        self.cb_xa.set(b["xa_phuong"])
-        self.var_tien_su.set(b["tien_su"])
+        d = bn.to_dict()
+        self.var_ho_ten.set(d["ho_ten"])
+        self.chon_ngay_sinh.set(dinh_dang_ngay(d["ngay_sinh"]))
+        self.var_gioi_tinh.set(d["gioi_tinh"])
+        self.cb_nhom_mau.set(d["nhom_mau"])
+        self.var_sdt.set(d["sdt"])
+        self.var_bhyt.set("" if d["so_bhyt"] == "Không có" else d["so_bhyt"])
+        self.var_email.set(d["email"])
+        self.var_dia_chi.set(d["dia_chi"])
+        if d["tinh_thanh"] not in self.cb_tinh["values"]:
+            self.cb_tinh["values"] = list(self.cb_tinh["values"]) + [d["tinh_thanh"]]
+        self.cb_tinh.set(d["tinh_thanh"])
+        self._cap_nhat_xa(d["tinh_thanh"], d["xa_phuong"])
+        self.cb_xa.set(d["xa_phuong"])
+        self.var_tien_su.set("" if d["tien_su_benh"] == "Không có" else d["tien_su_benh"])
 
     # ------------------------------------------------------------ hỗ trợ
     def _ma_dang_chon(self):
         chon = self.tree.selection()
         return chon[0] if chon else None
-
-    def _tim_theo_ma(self, ma):
-        return next((b for b in self.du_lieu if b["ma"] == ma), None)
-
-    def _ma_moi(self):
-        so_lon_nhat = max((int(b["ma"][8:]) for b in self.du_lieu), default=0)
-        return f"{date.today():%d%m%Y}{so_lon_nhat + 1:06d}"
 
     def _xoa_form(self):
         for bien in (self.var_ho_ten, self.var_sdt, self.var_bhyt, self.var_email,
@@ -260,6 +236,7 @@ class TabBenhNhan(ttk.Frame):
         self.cb_xa.set(CHO_XA)
 
     def _doc_form(self):
+        """Kiểm tra nhanh trên form (dùng validators của A); trả về dict hoặc None nếu lỗi."""
         def loi(noi_dung):
             messagebox.showwarning(config.TIEU_DE_APP, noi_dung, parent=self)
             return None
@@ -268,8 +245,10 @@ class TabBenhNhan(ttk.Frame):
         ngay_sinh = self.chon_ngay_sinh.get()
         gioi_tinh = self.var_gioi_tinh.get()
         sdt = self.var_sdt.get().strip()
+        bhyt = self.var_bhyt.get().strip()
         email = self.var_email.get().strip()
         dia_chi = self.var_dia_chi.get().strip()
+        tinh, xa = self.cb_tinh.get(), self.cb_xa.get()
 
         if not ho_ten:
             return loi("Họ tên không được để trống.")
@@ -277,45 +256,52 @@ class TabBenhNhan(ttk.Frame):
             return loi("Vui lòng chọn đủ ngày sinh (năm, tháng, ngày).")
         if not gioi_tinh:
             return loi("Vui lòng chọn giới tính.")
-        if not helpers.la_sdt_hop_le(sdt):
-            return loi("Số điện thoại phải gồm đúng 10 chữ số.")
-        if email and not helpers.la_email_hop_le(email):
+        if not la_sdt_hop_le(sdt):
+            return loi("Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0.")
+        if bhyt and not la_ma_bhyt_hop_le(bhyt):
+            return loi("Mã BHYT phải gồm đúng 13 chữ số (hoặc để trống).")
+        if email and not la_email_hop_le(email):
             return loi("Email không hợp lệ.")
         if not dia_chi:
             return loi("Vui lòng nhập địa chỉ (số nhà, tên đường).")
-        if self.cb_tinh.current() < 0:
+        if tinh in ("", CHO_TINH):
             return loi("Vui lòng chọn Tỉnh/Thành.")
-        if self.cb_xa.current() < 0:
+        if xa in ("", CHO_XA):
             return loi("Vui lòng chọn Phường/Xã.")
 
         return {
             "ho_ten": ho_ten,
-            "ngay_sinh": ngay_sinh,
+            "ngay_sinh": ngay_sinh.replace("/", "-"),   # hợp đồng hàm: DD-MM-YYYY
             "gioi_tinh": gioi_tinh,
             "nhom_mau": self.cb_nhom_mau.get(),
             "sdt": sdt,
-            "bhyt": self.var_bhyt.get().strip() or "Không có",   # để trống thì "Không có"
+            "so_bhyt": bhyt,
             "email": email,
             "dia_chi": dia_chi,
-            "tinh": self.cb_tinh.get(),
-            "xa_phuong": self.cb_xa.get(),
-            "tien_su": self.var_tien_su.get().strip(),
+            "tinh_thanh": tinh,
+            "xa_phuong": xa,
+            "tien_su_benh": self.var_tien_su.get().strip(),
         }
+
+    def _bao_ket_qua(self, thanh_cong, thong_diep):
+        """Hiện kết quả trả về từ lớp quản lý của A."""
+        if thanh_cong:
+            messagebox.showinfo(config.TIEU_DE_APP, thong_diep, parent=self)
+            self.thong_bao(thong_diep)
+        else:
+            messagebox.showerror(config.TIEU_DE_APP, thong_diep, parent=self)
+        return thanh_cong
 
     # ------------------------------------------------------------ chức năng
     def tim(self):
-        """Tìm không cần chính xác: không phân biệt hoa/thường và dấu tiếng Việt.
-        Họ tên: mỗi từ khóa là phần đầu của một từ trong tên ('an', 'van an', 'nguyen van an').
-        Mã / SĐT / Mã BHYT: từ khóa nằm ở bất kỳ đâu."""
-        khoa = TIM_THEO[self.cb_tim_theo.get()]
-        tu_khoa = self.var_tu_khoa.get()
-        ket_qua = [b for b in self.du_lieu if helpers.khop(khoa, b[khoa], tu_khoa)]
+        """Tìm không cần chính xác (không phân biệt hoa/thường và dấu), do QuanLyBenhNhan xử lý."""
+        ket_qua = self.ql.tim_kiem(self.var_tu_khoa.get(), TIM_THEO[self.cb_tim_theo.get()])
         self.hien_thi(ket_qua)
         self.thong_bao(f"Tìm thấy {len(ket_qua)} bệnh nhân")
 
     def lam_moi_danh_sach(self):
         self.var_tu_khoa.set("")
-        self.hien_thi(self.du_lieu)
+        self.hien_thi(self.ql.lay_tat_ca())
         self.thong_bao("Đã làm mới danh sách")
 
     def lam_moi_form(self):
@@ -323,38 +309,38 @@ class TabBenhNhan(ttk.Frame):
         self._xoa_form()
 
     def them(self):
-        du_lieu_form = self._doc_form()
-        if not du_lieu_form:
+        du_lieu = self._doc_form()
+        if not du_lieu:
             return
-        du_lieu_form["ma"] = self._ma_moi()
-        self.du_lieu.append(du_lieu_form)  
-        self.hien_thi(self.du_lieu)
-        self.lam_moi_form()
-        self.thong_bao(f"Đã thêm bệnh nhân {du_lieu_form['ma']}")
+        thanh_cong, thong_diep, _bn = self.ql.them(du_lieu)
+        if self._bao_ket_qua(thanh_cong, thong_diep):
+            self.var_tu_khoa.set("")
+            self.hien_thi(self.ql.lay_tat_ca())
+            self.lam_moi_form()
 
     def sua(self):
         ma = self._ma_dang_chon()
         if not ma:
             messagebox.showinfo(config.TIEU_DE_APP, "Hãy chọn một bệnh nhân trong bảng trước.", parent=self)
             return
-        du_lieu_form = self._doc_form()
-        if not du_lieu_form:
+        du_lieu = self._doc_form()
+        if not du_lieu:
             return
-        self._tim_theo_ma(ma).update(du_lieu_form)  
-        self.hien_thi(self.du_lieu)
-        self.tree.selection_set(ma)
-        self.thong_bao(f"Đã cập nhật bệnh nhân {ma}")
+        thanh_cong, thong_diep = self.ql.sua(ma, du_lieu)
+        if self._bao_ket_qua(thanh_cong, thong_diep):
+            self.hien_thi(self.ql.lay_tat_ca())
+            self.tree.selection_set(ma)
 
     def xoa(self):
         ma = self._ma_dang_chon()
-        if not ma:
+        bn = self.ql.tim_theo_ma(ma) if ma else None
+        if not bn:
             messagebox.showinfo(config.TIEU_DE_APP, "Hãy chọn một bệnh nhân trong bảng trước.", parent=self)
             return
-        b = self._tim_theo_ma(ma)
         if not messagebox.askyesno(config.TIEU_DE_APP,
-                                   f"Xóa bệnh nhân {ma} - {b['ho_ten']}?", parent=self):
+                                   f"Xóa bệnh nhân {ma} - {bn.ho_ten}?", parent=self):
             return
-        self.du_lieu.remove(b)  
-        self.hien_thi(self.du_lieu)
-        self.lam_moi_form()
-        self.thong_bao(f"Đã xóa bệnh nhân {ma}")
+        thanh_cong, thong_diep = self.ql.xoa(ma)
+        if self._bao_ket_qua(thanh_cong, thong_diep):
+            self.hien_thi(self.ql.lay_tat_ca())
+            self.lam_moi_form()
