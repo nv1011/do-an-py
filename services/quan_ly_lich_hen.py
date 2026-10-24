@@ -1,5 +1,6 @@
 """Dịch vụ quản lý lịch hẹn (CRUD, lọc theo ngày/bác sĩ, kiểm tra trùng lịch)."""
 from datetime import date, datetime
+from utils.helpers import gio_ra_phut
 from models.lich_hen import LichHen
 from services.json_store import JsonStore
 from utils.helpers import tim_lich_trung
@@ -18,7 +19,7 @@ class QuanLyLichHen:
         self.nap_du_lieu()
 
     def nap_du_lieu(self):
-        """Đọc danh sách lịch hẹn từ file JSON vào bộ nhớ RAM."""
+        """Đọc danh sách lịch hẹn từ file JSON vào bộ nhớ."""
         danh_sach_raw = self.store.doc_file(self.ten_file)
         self._danh_sach = []
         for d in danh_sach_raw:
@@ -33,7 +34,7 @@ class QuanLyLichHen:
         return self.store.ghi_file(self.ten_file, du_lieu_json)
 
     def lay_tat_ca(self):
-        """Trả về toàn bộ danh sách lịch hẹn trong bộ nhớ RAM."""
+        """Trả về toàn bộ danh sách lịch hẹn."""
         return list(self._danh_sach)
 
     def tim_theo_ma(self, ma):
@@ -80,18 +81,34 @@ class QuanLyLichHen:
     def kiem_tra_trung_lich(self, ma_bac_si, ngay, gio_bat_dau, thoi_luong, ma_lich_hen_bo_qua=None):
         """Kiểm tra xung đột thời gian khám của bác sĩ (bỏ qua lịch hủy, vắng và mã lịch đang sửa)."""
         if isinstance(ngay, str):
+            parsed = False
             for fmt in ("%d-%m-%Y", "%Y-%m-%d"):
                 try:
                     ngay = datetime.strptime(ngay.strip(), fmt).date()
+                    parsed = True
                     break
                 except ValueError:
                     pass
+        if not parsed:
+            return False, "Ngày hẹn không đúng định dạng (DD-MM-YYYY hoặc YYYY-MM-DD)!"
 
-        danh_sach_dict = [lh.to_dict() for lh in self._danh_sach if lh.trang_thai not in ("Da_huy", "Vang")]
-        lich_trung = tim_lich_trung(danh_sach_dict, ma_bac_si, str(ngay), gio_bat_dau, thoi_luong, bo_qua_ma=ma_lich_hen_bo_qua)
+        bd = gio_ra_phut(gio_bat_dau)
+        kt = bd + thoi_luong
 
-        if lich_trung:
-            return True, f"Bác sĩ đã có lịch hẹn khác vào lúc {lich_trung.get('gio_bat_dau', '')}!"
+        for lh in self._danh_sach:
+            if lh.trang_thai in ("Da_huy", "Vang"):
+                continue
+            if ma_lich_hen_bo_qua and lh.ma_lich_hen == ma_lich_hen_bo_qua:
+                continue
+            if lh.ma_bac_si != ma_bac_si or lh.ngay_hen != ngay:
+                continue
+
+            bd_kia = gio_ra_phut(lh.gio_bat_dau)
+            kt_kia = bd_kia + lh.thoi_luong
+
+            if bd < kt_kia and bd_kia < kt:
+                return True, f"Bác sĩ đã có lịch hẹn khác vào lúc {lh.gio_bat_dau}!"
+
         return False, ""
 
     def lay_danh_sach_bac_si_ranh(self, ngay, gio_bat_dau, thoi_luong, ma_khoa=None):
