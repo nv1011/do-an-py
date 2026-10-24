@@ -4,8 +4,7 @@ from utils.helpers import gio_ra_phut
 from models.lich_hen import LichHen
 from services.json_store import JsonStore
 from utils.helpers import tim_lich_trung
-
-FILE_LICH_HEN = "lich_hen.json"
+from config import FILE_LICH_HEN
 
 
 class QuanLyLichHen:
@@ -21,6 +20,9 @@ class QuanLyLichHen:
     def nap_du_lieu(self):
         """Đọc danh sách lịch hẹn từ file JSON vào bộ nhớ."""
         danh_sach_raw = self.store.doc_file(self.ten_file)
+        if self.store.loi_cuoi:
+                    pass
+        
         self._danh_sach = []
         for d in danh_sach_raw:
             try:
