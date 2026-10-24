@@ -4,8 +4,7 @@ from models.bac_si import BacSi
 from services.json_store import JsonStore
 from utils.helpers import khop
 from utils.validators import la_sdt_hop_le, la_ma_bac_si_hop_le, la_ngay_hop_le
-
-FILE_BAC_SI = "bac_si.json"
+from config import FILE_BAC_SI
 
 _TRUONG_TIM_BS = {
     "ho_ten": "ho_ten",
@@ -28,6 +27,9 @@ class QuanLyBacSi:
     def nap_du_lieu(self):
         """Đọc danh sách bác sĩ từ file JSON vào bộ nhớ."""
         danh_sach_raw = self.store.doc_file(self.ten_file)
+        if self.store.loi_cuoi:
+                    pass
+        
         self._danh_sach = []
         for d in danh_sach_raw:
             try:
