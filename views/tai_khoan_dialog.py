@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 import config
-from views import tai_khoan_gia
 
 
 class _HopThoai(tk.Toplevel):
@@ -52,40 +51,45 @@ class _HopThoai(tk.Toplevel):
 
 
 class DialogTaoTaiKhoan(_HopThoai):
-    def __init__(self, cha, tao_tai_khoan=tai_khoan_gia.tao_tai_khoan):
+    """Chỉ admin được tạo tài khoản (theo hợp đồng hàm)."""
+
+    def __init__(self, cha, ql_tai_khoan, nguoi_thuc_hien):
         super().__init__(cha, "Tạo tài khoản")
-        self.tao_tai_khoan = tao_tai_khoan
-        self.ten_moi = None
+        self.ql = ql_tai_khoan
+        self.nguoi_thuc_hien = nguoi_thuc_hien
         self.var_ten = tk.StringVar()
         self.var_mk = tk.StringVar()
         self.var_nhap_lai = tk.StringVar()
 
-        o_ten = self.them_o(0, "Tên đăng nhập (3-20 ký tự, không dấu)", self.var_ten, an=False)
-        self.them_o(1, "Mật khẩu (từ 6 ký tự)", self.var_mk)
-        self.them_o(2, "Nhập lại mật khẩu", self.var_nhap_lai)
-        ttk.Label(self.khung, text="Tài khoản mới có quyền người dùng thông thường.",
-                  foreground=config.MAU_CHU_MO).grid(row=6, column=0, sticky="w", pady=(8, 0))
+        o_ten = self.them_o(0, "Tên đăng nhập (không dấu, không khoảng trắng)", self.var_ten, an=False)
+        ttk.Label(self.khung, text="Vai trò").grid(row=2, column=0, sticky="w", pady=(6, 0))
+        self.cb_vai_tro = ttk.Combobox(self.khung, values=config.DANH_SACH_VAI_TRO, state="readonly")
+        self.cb_vai_tro.set(config.VAI_TRO_LE_TAN)
+        self.cb_vai_tro.grid(row=3, column=0, sticky="ew")
+        self.them_o(2, "Mật khẩu", self.var_mk)
+        self.them_o(3, "Nhập lại mật khẩu", self.var_nhap_lai)
         self.them_nut(4, "Tạo tài khoản")
         self.hien()
         o_ten.focus_set()
 
     def dong_y(self):
-        try:
-            self.tao_tai_khoan(self.var_ten.get(), self.var_mk.get(), self.var_nhap_lai.get())
-        except ValueError as loi:
-            self.var_loi.set(str(loi))
+        if self.var_mk.get() != self.var_nhap_lai.get():
+            self.var_loi.set("Mật khẩu nhập lại không khớp.")
             return
-        self.ten_moi = self.var_ten.get().strip()
-        messagebox.showinfo(config.TIEU_DE_APP,
-                            f"Đã tạo tài khoản '{self.ten_moi}'. Hãy đăng nhập.", parent=self)
+        ok, thong_diep, _tk = self.ql.tao_tai_khoan(
+            self.var_ten.get(), self.var_mk.get(), self.cb_vai_tro.get(), self.nguoi_thuc_hien)
+        if not ok:
+            self.var_loi.set(thong_diep)
+            return
+        messagebox.showinfo(config.TIEU_DE_APP, thong_diep, parent=self)
         self.destroy()
 
 
 class DialogDoiMatKhau(_HopThoai):
-    def __init__(self, cha, ten_dang_nhap, doi_mat_khau=tai_khoan_gia.doi_mat_khau):
+    def __init__(self, cha, ten_dang_nhap, ql_tai_khoan):
         super().__init__(cha, "Đổi mật khẩu")
         self.ten_dang_nhap = ten_dang_nhap
-        self.doi_mat_khau = doi_mat_khau
+        self.ql = ql_tai_khoan
         self.var_cu = tk.StringVar()
         self.var_moi = tk.StringVar()
         self.var_nhap_lai = tk.StringVar()
@@ -93,18 +97,20 @@ class DialogDoiMatKhau(_HopThoai):
         ttk.Label(self.khung, text=f"Tài khoản: {ten_dang_nhap}").grid(
             row=0, column=0, sticky="w")
         o_cu = self.them_o(1, "Mật khẩu hiện tại", self.var_cu)
-        self.them_o(2, "Mật khẩu mới (từ 6 ký tự)", self.var_moi)
+        self.them_o(2, "Mật khẩu mới", self.var_moi)
         self.them_o(3, "Nhập lại mật khẩu mới", self.var_nhap_lai)
         self.them_nut(4, "Đổi mật khẩu")
         self.hien()
         o_cu.focus_set()
 
     def dong_y(self):
-        try:
-            self.doi_mat_khau(self.ten_dang_nhap, self.var_cu.get(),
-                              self.var_moi.get(), self.var_nhap_lai.get())
-        except ValueError as loi:
-            self.var_loi.set(str(loi))
+        if self.var_moi.get() != self.var_nhap_lai.get():
+            self.var_loi.set("Mật khẩu nhập lại không khớp.")
             return
-        messagebox.showinfo(config.TIEU_DE_APP, "Đã đổi mật khẩu thành công.", parent=self)
+        ok, thong_diep = self.ql.doi_mat_khau(
+            self.ten_dang_nhap, self.var_cu.get(), self.var_moi.get())
+        if not ok:
+            self.var_loi.set(thong_diep)
+            return
+        messagebox.showinfo(config.TIEU_DE_APP, thong_diep, parent=self)
         self.destroy()

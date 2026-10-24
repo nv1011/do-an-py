@@ -5,7 +5,8 @@ from datetime import date
 
 import config
 from views import helpers
-from views.du_lieu_gia import QuanLyPhieuKhamGia, QuanLyBacSiGia
+from services.quan_ly_bac_si import QuanLyBacSi
+from views.du_lieu_gia import QuanLyPhieuKhamGia
 from views.widgets.date_picker import DatePicker
 
 TAT_CA = "Tất cả"
@@ -72,7 +73,7 @@ class TabPhieuKham(ttk.Frame):
         self.vai_tro = vai_tro
         self.ql = quan_ly or QuanLyPhieuKhamGia()      # NỐI A: QuanLyPhieuKham
         self.ql_bn = ql_benh_nhan
-        self.ql_bs = ql_bac_si or QuanLyBacSiGia()     # NỐI A: QuanLyBacSi
+        self.ql_bs = ql_bac_si or QuanLyBacSi()
         self.ma_dang_chon = None
         self.don_thuoc = []
         self.dich_vu = {f"{d['ma_dich_vu']} - {d['ten_dich_vu']} - {_tien(d['don_gia'])}": d["ma_dich_vu"]

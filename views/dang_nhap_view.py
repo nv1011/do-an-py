@@ -4,16 +4,12 @@ from tkinter import ttk
 
 import config
 from views import helpers
-from views import tai_khoan_gia
-from views.tai_khoan_dialog import DialogTaoTaiKhoan
 
 
 class DangNhapView(tk.Tk):
-    def __init__(self, xac_thuc=tai_khoan_gia.xac_thuc, khi_thanh_cong=None,
-                 tao_tai_khoan=tai_khoan_gia.tao_tai_khoan):
+    def __init__(self, xac_thuc, khi_thanh_cong=None):
         super().__init__()
         self.xac_thuc = xac_thuc
-        self.tao_tai_khoan = tao_tai_khoan
         self.khi_thanh_cong = khi_thanh_cong
 
         self.title(f"{config.TIEU_DE_APP} - Đăng nhập")
@@ -68,8 +64,6 @@ class DangNhapView(tk.Tk):
             row=0, column=0, sticky="ew", padx=(0, 6), ipady=4)
         tk.Button(khung_nut, text="Thoát", bg="#e0e0e0", command=self.thoat).grid(
             row=0, column=1, sticky="ew", padx=(6, 0), ipady=4)
-        tk.Button(the, text="Chưa có tài khoản? Tạo tài khoản", bg="white", fg=config.MAU_VIEN_CHON,
-                  relief="flat", cursor="hand2", command=self.tao_tai_khoan_moi).pack(pady=(12, 0))
 
     def dang_nhap(self):
         ten = self.var_ten.get().strip()
@@ -92,18 +86,6 @@ class DangNhapView(tk.Tk):
         if self.khi_thanh_cong:
             self.khi_thanh_cong(ten, vai_tro)
 
-    def tao_tai_khoan_moi(self):
-        hop_thoai = DialogTaoTaiKhoan(self, self.tao_tai_khoan)
-        self.wait_window(hop_thoai)
-        if hop_thoai.ten_moi:
-            self.var_ten.set(hop_thoai.ten_moi)
-            self.var_mat_khau.set("")
-            self.var_loi.set("")
-            self.ent_mat_khau.focus_set()
-
     def thoat(self):
         self.destroy()
 
-
-if __name__ == "__main__":
-    DangNhapView().mainloop()

@@ -5,7 +5,7 @@ from datetime import date
 
 import config
 from views import helpers
-from views.du_lieu_gia import QuanLyPhieuKhamGia, QuanLyBacSiGia, ThongKeGia
+from views.du_lieu_gia import QuanLyPhieuKhamGia, ThongKeGia
 from views.widgets.bieu_do import BieuDoCot, BieuDoDuong, BieuDoTron
 from views.widgets.date_picker import DatePicker
 
@@ -17,7 +17,7 @@ class TabThongKe(ttk.Frame):
         super().__init__(parent)
         self.thong_bao = thong_bao or (lambda _m: None)
         if thong_ke is None:                                   # NỐI A: ThongKe(...)
-            thong_ke = ThongKeGia(QuanLyPhieuKhamGia(), QuanLyBacSiGia())
+            thong_ke = ThongKeGia(QuanLyPhieuKhamGia())
         self.thong_ke = thong_ke
 
         self._tao_thanh_loc()

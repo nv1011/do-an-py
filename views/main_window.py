@@ -4,20 +4,28 @@ from tkinter import ttk, messagebox
 
 import config
 from views import helpers
+from services.quan_ly_bac_si import QuanLyBacSi
 from services.quan_ly_benh_nhan import QuanLyBenhNhan
+from services.quan_ly_lich_hen import QuanLyLichHen
+from services.quan_ly_tai_khoan import QuanLyTaiKhoan
 from views.tab_benh_nhan import TabBenhNhan
-from views.tai_khoan_dialog import DialogDoiMatKhau
+from views.tai_khoan_dialog import DialogDoiMatKhau, DialogTaoTaiKhoan
 from views.tab_lich_hen import TabLichHen
 from views.tab_phieu_kham import TabPhieuKham
 from views.tab_thong_ke import TabThongKe
-from views.du_lieu_gia import QuanLyPhieuKhamGia, QuanLyBacSiGia, QuanLyLichHenGia, ThongKeGia
+from views.du_lieu_gia import QuanLyPhieuKhamGia, ThongKeGia
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, ten_dang_nhap="admin", vai_tro="admin"):
+    def __init__(self, ten_dang_nhap, vai_tro, ql_benh_nhan=None, ql_bac_si=None,
+                 ql_lich_hen=None, ql_tai_khoan=None):
         super().__init__()
         self.ten_dang_nhap = ten_dang_nhap
         self.vai_tro = vai_tro
+        self.ql_benh_nhan = ql_benh_nhan or QuanLyBenhNhan()
+        self.ql_bac_si = ql_bac_si or QuanLyBacSi()
+        self.ql_lich_hen = ql_lich_hen or QuanLyLichHen(quan_ly_bac_si=self.ql_bac_si)
+        self.ql_tai_khoan = ql_tai_khoan or QuanLyTaiKhoan()
         self.ket_thuc = "thoat"
 
         self.title(config.TIEU_DE_APP)
@@ -42,6 +50,8 @@ class MainWindow(tk.Tk):
 
         menu_he_thong = tk.Menu(thanh_menu, tearoff=0)
         menu_he_thong.add_command(label="Đổi mật khẩu", command=self.doi_mat_khau)
+        if self.vai_tro == config.VAI_TRO_ADMIN:
+            menu_he_thong.add_command(label="Tạo tài khoản", command=self.tao_tai_khoan)
         menu_he_thong.add_command(label="Đăng xuất", command=self.dang_xuat)
         menu_he_thong.add_separator()
         menu_he_thong.add_command(label="Thoát", command=self.thoat)
@@ -70,15 +80,14 @@ class MainWindow(tk.Tk):
             self.notebook.add(frame, text=ten)
             self.tabs[ten] = frame
 
-        self.ql_benh_nhan = QuanLyBenhNhan()
         TabBenhNhan(self.tabs["Bệnh nhân"], thong_bao=self.trang_thai.set,
                    vai_tro=self.vai_tro, quan_ly=self.ql_benh_nhan).pack(fill="both", expand=True)
 
-        # NỐI A: thay các đối tượng giả bằng QuanLyBacSi, QuanLyPhieuKham, ThongKe thật
-        self.ql_bac_si = QuanLyBacSiGia()
         TabLichHen(self.tabs["Lịch hẹn"], thong_bao=self.trang_thai.set, vai_tro=self.vai_tro,
                    ql_benh_nhan=self.ql_benh_nhan, ql_bac_si=self.ql_bac_si,
-                   ql_lich_hen=QuanLyLichHenGia()).pack(fill="both", expand=True)
+                   ql_lich_hen=self.ql_lich_hen).pack(fill="both", expand=True)
+
+        # NỐI A: thay QuanLyPhieuKhamGia, ThongKeGia bằng QuanLyPhieuKham, ThongKe khi A xong
         self.ql_phieu = QuanLyPhieuKhamGia()
         self.tab_phieu_kham = TabPhieuKham(
             self.tabs["Phiếu khám"], thong_bao=self.trang_thai.set, vai_tro=self.vai_tro,
@@ -121,7 +130,10 @@ class MainWindow(tk.Tk):
         )
 
     def doi_mat_khau(self):
-        DialogDoiMatKhau(self, self.ten_dang_nhap)
+        DialogDoiMatKhau(self, self.ten_dang_nhap, self.ql_tai_khoan)
+
+    def tao_tai_khoan(self):
+        DialogTaoTaiKhoan(self, self.ql_tai_khoan, self.ten_dang_nhap)
 
     def dang_xuat(self):
         if messagebox.askyesno(config.TIEU_DE_APP, "Bạn có chắc muốn đăng xuất?", parent=self):

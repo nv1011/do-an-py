@@ -1,3 +1,5 @@
+import os
+
 TIEU_DE_APP = "Quản lý phòng khám"
 
 # Cửa sổ chính
@@ -40,13 +42,13 @@ MAU_BIEU_DO = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300",
 # Thứ tự các tab trong Notebook
 DANH_SACH_TAB = ["Bệnh nhân", "Lịch hẹn", "Phiếu khám", "Thống kê"]
 
-# Từ điển học vị bác sĩ (mã 2 số -> tên viết tắt)
+# Dictionary học vị bác sĩ (mã 2 số -> tên viết tắt)
 HOC_VI = {
     "01": "TS",
     "02": "ThS",
     "03": "BS"
 }
-hoc_vi = HOC_VI  # Alias tương thích ngược
+hoc_vi = HOC_VI
 
 # Cấu hình khung giờ và lịch hẹn
 GIO_BAT_DAU_KHAM = "07:00"

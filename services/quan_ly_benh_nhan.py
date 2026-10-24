@@ -4,8 +4,8 @@ from models.benh_nhan import BenhNhan
 from services.json_store import JsonStore
 from utils.helpers import khop
 from utils.validators import la_ngay_hop_le, la_sdt_hop_le, la_ma_bhyt_hop_le, la_email_hop_le
+from config import FILE_BENH_NHAN
 
-# Ánh xạ mã tiêu chí sang tên thuộc tính của đối tượng BenhNhan
 _TRUONG_TIM = {
     "ho_ten": "ho_ten",
     "bhyt": "so_bhyt",
@@ -19,7 +19,7 @@ _TRUONG_TIM = {
 class QuanLyBenhNhan:
     """Quản lý danh sách bệnh nhân, thao tác CRUD và tìm kiếm gần đúng."""
 
-    def __init__(self, json_store: JsonStore = None, ten_file: str = "benh_nhan.json"):
+    def __init__(self, json_store = None, ten_file = FILE_BENH_NHAN):
         self.store = json_store or JsonStore()
         self.ten_file = ten_file
         self._danh_sach: list[BenhNhan] = []
@@ -28,6 +28,10 @@ class QuanLyBenhNhan:
     def nap_du_lieu(self):
         """Đọc danh sách bệnh nhân từ file JSON vào bộ nhớ."""
         danh_sach_raw = self.store.doc_file(self.ten_file)
+        if self.store.loi_cuoi:
+            pass
+
+
         self._danh_sach = []
         for d in danh_sach_raw:
             try:
@@ -35,16 +39,16 @@ class QuanLyBenhNhan:
             except (KeyError, ValueError):
                 continue
 
-    def luu_du_lieu(self) -> bool:
+    def luu_du_lieu(self):
         """Ghi danh sách bệnh nhân hiện tại ra file JSON theo cơ chế Atomic Write."""
         du_lieu_json = [bn.to_dict() for bn in self._danh_sach]
         return self.store.ghi_file(self.ten_file, du_lieu_json)
 
-    def lay_tat_ca(self) -> list[BenhNhan]:
+    def lay_tat_ca(self):
         """Trả về toàn bộ danh sách bệnh nhân."""
         return list(self._danh_sach)
 
-    def tim_theo_ma(self, ma: str) -> BenhNhan | None:
+    def tim_theo_ma(self, ma):
         """Tìm chính xác bệnh nhân theo mã định danh 14 chữ số."""
         ma_clean = str(ma).strip()
         for bn in self._danh_sach:
@@ -58,7 +62,7 @@ class QuanLyBenhNhan:
         so_bhyt: str = "",
         sdt: str = "",
         ma: str = "",
-    ) -> list[BenhNhan]:
+    ):
         """Tìm kiếm kết hợp đa tiêu chí (ít nhất 2 tiêu chí chính: họ tên và số BHYT).
 
         - Tiêu chí chính: 'ho_ten' và 'so_bhyt'
@@ -89,7 +93,7 @@ class QuanLyBenhNhan:
         ho_ten: str = None,
         so_bhyt: str = None,
         **tieu_chi_khac,
-    ) -> list[BenhNhan]:
+    ):
         """Tìm kiếm bệnh nhân không dấu tiếng Việt.
 
         Hỗ trợ 2 chế độ gọi:
@@ -121,7 +125,7 @@ class QuanLyBenhNhan:
             if khop(tieu_chi, getattr(bn, thuoc_tinh, ""), tu_khoa)
         ]
 
-    def _chuyen_ngay(self, val) -> tuple[bool, date | None, str]:
+    def _chuyen_ngay(self, val):
         """Chuyển đổi chuỗi ngày dạng DD-MM-YYYY hoặc YYYY-MM-DD sang date, kiểm tra năm nhuận."""
         if isinstance(val, date):
             return True, val, ""
@@ -155,7 +159,7 @@ class QuanLyBenhNhan:
 
         return False, None, "Định dạng ngày phải là DD-MM-YYYY (Ví dụ: 15-05-1990)!"
 
-    def sinh_ma_moi(self, ngay_dang_ky: date = None) -> str:
+    def sinh_ma_moi(self, ngay_dang_ky = None):
         """Sinh mã bệnh nhân 14 số tự động: DDMMYYYY + 6 số thứ tự trong ngày."""
         ngay = ngay_dang_ky or date.today()
         tien_to = ngay.strftime("%d%m%Y")
@@ -173,42 +177,35 @@ class QuanLyBenhNhan:
         stt_moi = stt_max + 1
         return f"{tien_to}{stt_moi:06d}"
 
-    def them(self, du_lieu: dict) -> tuple[bool, str, BenhNhan | None]:
+    def them(self, du_lieu):
         """Thêm bệnh nhân mới từ từ điển dữ liệu form.
 
         Tự động kiểm tra trùng mã, trùng SĐT, định dạng ngày sinh DD-MM-YYYY.
         """
-        # 1. Kiểm tra họ tên
         ho_ten = (du_lieu.get("ho_ten") or "").strip()
         if not ho_ten:
             return False, "Họ và tên không được để trống!", None
 
-        # 2. Xử lý ngày sinh
         ok, ngay_sinh, msg = self._chuyen_ngay(du_lieu.get("ngay_sinh"))
         if not ok:
             return False, msg, None
 
-        # 3. Kiểm tra số điện thoại
         sdt = str(du_lieu.get("sdt") or "").strip()
         if not la_sdt_hop_le(sdt):
             return False, "Số điện thoại không hợp lệ (phải gồm 10 số, bắt đầu bằng 0)!", None
 
-        # Kiểm tra trùng SĐT
         for bn in self._danh_sach:
             if bn.sdt == sdt:
                 return False, f"Số điện thoại '{sdt}' đã được đăng ký bởi bệnh nhân {bn.ho_ten}!", None
 
-        # 4. Kiểm tra mã BHYT (nếu có)
         so_bhyt = (du_lieu.get("so_bhyt") or "Không có").strip()
         if not la_ma_bhyt_hop_le(so_bhyt):
             return False, "Số thẻ BHYT không hợp lệ (phải gồm đúng 13 chữ số hoặc 'Không có')!", None
 
-        # 5. Kiểm tra email (nếu có)
         email = (du_lieu.get("email") or "").strip()
         if email and not la_email_hop_le(email):
             return False, "Địa chỉ email không hợp lệ!", None
 
-        # 6. Sinh hoặc kiểm tra mã định danh
         ma_dinh_danh = du_lieu.get("ma_dinh_danh")
         if not ma_dinh_danh:
             ma_dinh_danh = self.sinh_ma_moi()
@@ -217,7 +214,6 @@ class QuanLyBenhNhan:
             if self.tim_theo_ma(ma_dinh_danh):
                 return False, f"Mã bệnh nhân '{ma_dinh_danh}' đã tồn tại trong hệ thống!", None
 
-        # 7. Khởi tạo đối tượng BenhNhan
         try:
             bn_moi = BenhNhan(
                 ma_dinh_danh=ma_dinh_danh,
@@ -236,13 +232,12 @@ class QuanLyBenhNhan:
         except ValueError as e:
             return False, f"Dữ liệu không hợp lệ: {e}", None
 
-        # 8. Lưu vào danh sách và file JSON
         self._danh_sach.append(bn_moi)
         if self.luu_du_lieu():
             return True, f"Thêm bệnh nhân '{ho_ten}' thành công (Mã: {ma_dinh_danh})!", bn_moi
         return False, f"Lỗi khi lưu dữ liệu: {self.store.loi_cuoi or 'không rõ nguyên nhân'}", None
 
-    def sua(self, ma: str, du_lieu_moi: dict) -> tuple[bool, str]:
+    def sua(self, ma, du_lieu_moi):
         """Cập nhật thông tin bệnh nhân có mã ma. Quyền: Chỉ admin."""
         bn = self.tim_theo_ma(ma)
         if not bn:
@@ -286,7 +281,7 @@ class QuanLyBenhNhan:
         except ValueError as e:
             return False, f"Lỗi cập nhật: {e}"
 
-    def xoa(self, ma: str) -> tuple[bool, str]:
+    def xoa(self, ma):
         """Xóa bệnh nhân khỏi hệ thống. Quyền: Chỉ admin."""
         bn = self.tim_theo_ma(ma)
         if not bn:
