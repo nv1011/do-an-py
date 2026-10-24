@@ -1,6 +1,6 @@
 from pathlib import Path
 
-hoc_vi = {"01": "TS", "02": "ThS", "03": "BS"}
+HOC_VI = {"01": "TS", "02": "ThS", "03": "BS"}
 
 hoc_vi = HOC_VI  # Alias tương thích ngược
 
