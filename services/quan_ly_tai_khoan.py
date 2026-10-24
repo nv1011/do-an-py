@@ -2,9 +2,7 @@
 from datetime import date
 from models.tai_khoan import TaiKhoan
 from services.json_store import JsonStore
-from config import DANH_SACH_VAI_TRO, VAI_TRO_ADMIN, VAI_TRO_LE_TAN
-
-FILE_TAI_KHOAN = "tai_khoan.json"
+from config import DANH_SACH_VAI_TRO, VAI_TRO_ADMIN, VAI_TRO_LE_TAN, FILE_TAI_KHOAN
 
 
 class QuanLyTaiKhoan:
@@ -18,8 +16,11 @@ class QuanLyTaiKhoan:
         self.nap_du_lieu()
 
     def nap_du_lieu(self):
-        """Đọc danh sách tài khoản từ file JSON vào bộ nhớ."""
+        """Đọc danh sách tài khoản từ file JSON vào bộ nhớ, lưu vết file hỏng nếu có."""
         danh_sach_raw = self.store.doc_file(self.ten_file)
+        if self.store.loi_cuoi:
+            pass
+
         self._danh_sach = []
         for d in danh_sach_raw:
             try:
@@ -46,12 +47,17 @@ class QuanLyTaiKhoan:
                 return tk
         return None
 
+    def _la_admin(self, nguoi_thuc_hien):
+        """True nếu nguoi_thuc_hien (tên đăng nhập) là tài khoản admin đang hoạt động."""
+        if not nguoi_thuc_hien:
+            return False
+        tk = self.tim_theo_ten(nguoi_thuc_hien)
+        return tk is not None and tk.trang_thai and tk.vai_tro == VAI_TRO_ADMIN
+
     def xac_thuc(self, ten_dang_nhap, mat_khau_nhap):
-        """Xác thực đăng nhập người dùng."""
+        """Xác thực đăng nhập. Trả về tên vai trò ('admin' hoặc 'le_tan') nếu đúng; None nếu sai."""
         tk = self.tim_theo_ten(ten_dang_nhap)
-        if not tk:
-            return None
-        if not tk.trang_thai:
+        if not tk or not tk.trang_thai:
             return None
         if tk.xac_thuc(mat_khau_nhap):
             return tk.vai_tro
@@ -71,15 +77,16 @@ class QuanLyTaiKhoan:
 
         try:
             tk.doi_mat_khau(mk_moi)
-            self.luu_du_lieu()
+            if not self.luu_du_lieu():
+                return False, f"Lỗi ghi file: {self.store.loi_cuoi}"
             return True, "Đổi mật khẩu thành công!"
         except ValueError as e:
             return False, str(e)
 
-    def tao_tai_khoan(self, ten, mat_khau, vai_tro, nguoi_thuc_hien=VAI_TRO_ADMIN):
+    def tao_tai_khoan(self, ten, mat_khau, vai_tro, nguoi_thuc_hien=None):
         """Tạo tài khoản mới trong hệ thống (Quyền hạn: Chỉ Admin)."""
-        if nguoi_thuc_hien != VAI_TRO_ADMIN:
-            return False, "Quyền bị từ chối: Chỉ quản trị viên (Admin) mới có quyền tạo tài khoản!", None
+        if not self._la_admin(nguoi_thuc_hien):
+            return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền tạo tài khoản!", None
 
         ten_clean = (ten or "").strip()
         if self.tim_theo_ten(ten_clean):
@@ -88,17 +95,17 @@ class QuanLyTaiKhoan:
         try:
             tai_khoan_moi = TaiKhoan.tao_moi(ten_clean, mat_khau, vai_tro)
             self._danh_sach.append(tai_khoan_moi)
-            self.luu_du_lieu()
+            if not self.luu_du_lieu():
+                self._danh_sach.pop()
+                return False, f"Lỗi ghi file: {self.store.loi_cuoi}", None
             return True, f"Tạo tài khoản '{ten_clean}' thành công!", tai_khoan_moi
         except ValueError as e:
             return False, str(e), None
 
-    def khoa_tai_khoan(self, ten, nguoi_thuc_hien=VAI_TRO_ADMIN):
+    def khoa_tai_khoan(self, ten, nguoi_thuc_hien=None):
         """Khóa tài khoản không cho phép đăng nhập (Quyền hạn: Chỉ Admin)."""
-        if nguoi_thuc_hien != VAI_TRO_ADMIN and nguoi_thuc_hien != "admin":
-            tk_th = self.tim_theo_ten(nguoi_thuc_hien)
-            if not tk_th or tk_th.vai_tro != VAI_TRO_ADMIN:
-                return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền khóa tài khoản!"
+        if not self._la_admin(nguoi_thuc_hien):
+            return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền khóa tài khoản!"
 
         tk = self.tim_theo_ten(ten)
         if not tk:
@@ -114,15 +121,16 @@ class QuanLyTaiKhoan:
             return False, f"Tài khoản '{ten}' hiện tại đã bị khóa từ trước!"
 
         tk.khoa()
-        self.luu_du_lieu()
+        if not self.luu_du_lieu():
+            tk.mo_khoa()  # Hoàn tác trạng thái
+            return False, f"Lỗi ghi file: {self.store.loi_cuoi}"
+            
         return True, f"Đã khóa tài khoản '{tk.ten_dang_nhap}' thành công!"
 
-    def mo_khoa_tai_khoan(self, ten, nguoi_thuc_hien=VAI_TRO_ADMIN):
+    def mo_khoa_tai_khoan(self, ten, nguoi_thuc_hien=None):
         """Mở khóa cho tài khoản bị vô hiệu hóa (Quyền hạn: Chỉ Admin)."""
-        if nguoi_thuc_hien != VAI_TRO_ADMIN and nguoi_thuc_hien != "admin":
-            tk_th = self.tim_theo_ten(nguoi_thuc_hien)
-            if not tk_th or tk_th.vai_tro != VAI_TRO_ADMIN:
-                return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền mở khóa tài khoản!"
+        if not self._la_admin(nguoi_thuc_hien):
+            return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền mở khóa tài khoản!"
 
         tk = self.tim_theo_ten(ten)
         if not tk:
@@ -132,33 +140,40 @@ class QuanLyTaiKhoan:
             return False, f"Tài khoản '{ten}' đang hoạt động bình thường!"
 
         tk.mo_khoa()
-        self.luu_du_lieu()
+        if not self.luu_du_lieu():
+            tk.khoa()  # Hoàn tác trạng thái
+            return False, f"Lỗi ghi file: {self.store.loi_cuoi}"
+            
         return True, f"Đã mở khóa tài khoản '{tk.ten_dang_nhap}' thành công!"
 
-    def dat_lai_mat_khau(self, ten, mat_khau_moi, nguoi_thuc_hien=VAI_TRO_ADMIN):
+    def dat_lai_mat_khau(self, ten, mat_khau_moi, nguoi_thuc_hien=None):
         """Admin đặt lại mật khẩu cho một tài khoản (không cần biết mật khẩu cũ)."""
-        if nguoi_thuc_hien != VAI_TRO_ADMIN and nguoi_thuc_hien != "admin":
-            tk_th = self.tim_theo_ten(nguoi_thuc_hien)
-            if not tk_th or tk_th.vai_tro != VAI_TRO_ADMIN:
-                return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền đặt lại mật khẩu!"
+        if not self._la_admin(nguoi_thuc_hien):
+            return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền đặt lại mật khẩu!"
 
         tk = self.tim_theo_ten(ten)
         if not tk:
             return False, f"Không tìm thấy tài khoản '{ten}'!"
 
         try:
+            # Lưu lại hash cũ để phòng hờ rollback nếu lỗi ghi file
+            hash_cu_tam = tk.mat_khau_hash
+            salt_cu_tam = tk.salt
+            
             tk.doi_mat_khau(mat_khau_moi)
-            self.luu_du_lieu()
+            if not self.luu_du_lieu():
+                tk._mat_khau_hash = hash_cu_tam
+                tk._salt = salt_cu_tam
+                return False, f"Lỗi ghi file: {self.store.loi_cuoi}"
+                
             return True, f"Đặt lại mật khẩu cho tài khoản '{tk.ten_dang_nhap}' thành công!"
         except ValueError as e:
             return False, str(e)
 
-    def xoa_tai_khoan(self, ten, nguoi_thuc_hien=VAI_TRO_ADMIN):
+    def xoa_tai_khoan(self, ten, nguoi_thuc_hien=None):
         """Xóa tài khoản khỏi hệ thống (Quyền hạn: Chỉ Admin)."""
-        if nguoi_thuc_hien != VAI_TRO_ADMIN and nguoi_thuc_hien != "admin":
-            tk_th = self.tim_theo_ten(nguoi_thuc_hien)
-            if not tk_th or tk_th.vai_tro != VAI_TRO_ADMIN:
-                return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền xóa tài khoản!"
+        if not self._la_admin(nguoi_thuc_hien):
+            return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền xóa tài khoản!"
 
         tk = self.tim_theo_ten(ten)
         if not tk:
@@ -171,5 +186,8 @@ class QuanLyTaiKhoan:
             return False, "Bạn không thể tự xóa tài khoản của chính mình!"
 
         self._danh_sach.remove(tk)
-        self.luu_du_lieu()
+        if not self.luu_du_lieu():
+            self._danh_sach.append(tk)  # Hoàn tác nếu lưu thất bại
+            return False, f"Lỗi ghi file: {self.store.loi_cuoi}"
+            
         return True, f"Đã xóa tài khoản '{tk.ten_dang_nhap}' khỏi hệ thống!"
