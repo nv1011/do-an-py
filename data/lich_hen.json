@@ -58,5 +58,25 @@
     "thoi_luong": 30,
     "trang_thai": "Cho_kham",
     "ly_do_kham": "Kiểm tra sức khỏe tổng quát"
+  },
+  {
+    "ma_lich_hen": "LH007",
+    "ma_benh_nhan": "12102026000002",
+    "ma_bac_si": "010120001",
+    "ngay_hen": "2026-10-25",
+    "gio_bat_dau": "08:00",
+    "thoi_luong": 60,
+    "trang_thai": "Da_huy",
+    "ly_do_kham": ""
+  },
+  {
+    "ma_lich_hen": "LH008",
+    "ma_benh_nhan": "12102026000001",
+    "ma_bac_si": "020419003",
+    "ngay_hen": "2026-10-25",
+    "gio_bat_dau": "07:30",
+    "thoi_luong": 45,
+    "trang_thai": "Da_huy",
+    "ly_do_kham": ""
   }
 ]
