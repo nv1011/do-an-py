@@ -36,7 +36,7 @@ class JsonStore:
         self.thu_muc_data.mkdir(parents=True, exist_ok=True)
         self.thu_muc_backup.mkdir(parents=True, exist_ok=True)
 
-    def _chuan_hoa_duong_dan(self, duong_dan) -> Path:
+    def _chuan_hoa_duong_dan(self, duong_dan):
         """Nếu chỉ truyền tên file (VD: 'benh_nhan.json'), tự động gắn vào thư mục data."""
         p = Path(duong_dan)
         if not p.is_absolute() and p.parent == Path("."):
@@ -46,7 +46,7 @@ class JsonStore:
         return p
 
     # ------------------------------------------------------------------ đọc
-    def doc_file(self, duong_dan) -> list[dict]:
+    def doc_file(self, duong_dan):
         """Đọc file JSON, luôn trả về list[dict]. Không bao giờ ném lỗi ra ngoài."""
         duong_dan = self._chuan_hoa_duong_dan(duong_dan)
         self.loi_cuoi = ""
@@ -80,7 +80,7 @@ class JsonStore:
         return kq if kq else (mac_dinh if mac_dinh is not None else [])
 
     # ------------------------------------------------------------------ ghi
-    def ghi_file(self, duong_dan, du_lieu) -> bool:
+    def ghi_file(self, duong_dan, du_lieu):
         """Ghi list[dict] ra file theo kiểu nguyên tử. Trả về True/False, lý do ở `loi_cuoi`."""
         duong_dan = self._chuan_hoa_duong_dan(duong_dan)
         self.loi_cuoi = ""
@@ -108,7 +108,7 @@ class JsonStore:
                     pass
             return False
 
-    def ghi(self, duong_dan, du_lieu) -> bool:
+    def ghi(self, duong_dan, du_lieu):
         """Bí danh tương thích ngược cho ghi_file."""
         return self.ghi_file(duong_dan, du_lieu)
 
