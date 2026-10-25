@@ -75,6 +75,11 @@ class DatePicker(ttk.Frame):
             return ""
         return f"{ngay:02d}/{thang:02d}/{nam}"
 
+    def get_phan(self):
+        """(năm, tháng, ngày); phần chưa chọn là None."""
+        return (self._doc(self.cb_nam), self._doc(self.cb_thang),
+                self._doc(self.cb_ngay))
+
     def get_date(self):
         """datetime.date, hoặc None nếu chưa chọn đủ / ngày không tồn tại."""
         chuoi = self.get()
