@@ -68,5 +68,15 @@
     "thoi_luong": 60,
     "trang_thai": "Da_huy",
     "ly_do_kham": ""
+  },
+  {
+    "ma_lich_hen": "LH008",
+    "ma_benh_nhan": "12102026000001",
+    "ma_bac_si": "020419003",
+    "ngay_hen": "2026-10-25",
+    "gio_bat_dau": "07:30",
+    "thoi_luong": 45,
+    "trang_thai": "Da_huy",
+    "ly_do_kham": ""
   }
 ]
