@@ -199,12 +199,14 @@ class TabLichHen(ttk.Frame):
 
     # ------------------------------------------------------------ hiển thị
     def _lich_theo_bo_loc(self):
-        """Ngày chưa chọn = mọi ngày; 'Tất cả bác sĩ' = mọi bác sĩ."""
-        ngay = self.loc_ngay.get_date()
+        """Lọc theo phần đã chọn (năm / tháng / ngày); 'Tất cả bác sĩ' = mọi bác sĩ."""
+        nam, thang, ngay = self.loc_ngay.get_phan()
         i = self.cb_loc_bac_si.current()
         ma_bs = self.ds_bac_si[i - 1]["ma"] if i > 0 else None
         ket_qua = [lh for lh in self.du_lieu
-                   if (ngay is None or lh["ngay"] == ngay)
+                   if (nam is None or lh["ngay"].year == nam)
+                   and (thang is None or lh["ngay"].month == thang)
+                   and (ngay is None or lh["ngay"].day == ngay)
                    and (ma_bs is None or lh["ma_bac_si"] == ma_bs)]
         return sorted(ket_qua, key=lambda lh: (lh["ngay"], lh["gio"]))
 
@@ -322,7 +324,8 @@ class TabLichHen(ttk.Frame):
             return
         ma_bs, ngay, gio, thoi_luong = thong_tin
         trung, thong_diep = self.ql.kiem_tra_trung_lich(
-            ma_bs, ngay, gio, thoi_luong, ma_lich_hen_bo_qua=self._ma_dang_chon())
+            ma_bs, ngay.strftime("%d-%m-%Y"), gio, thoi_luong,
+            ma_lich_hen_bo_qua=self._ma_dang_chon())
         if trung:
             self._hien_canh_bao(thong_diep)
         else:
@@ -381,7 +384,7 @@ class TabLichHen(ttk.Frame):
         if not lich:
             return
         trung, thong_diep = self.ql.kiem_tra_trung_lich(
-            lich["ma_bac_si"], lich["ngay"], lich["gio"], lich["thoi_luong"])
+            lich["ma_bac_si"], lich["ngay"].strftime("%d-%m-%Y"), lich["gio"], lich["thoi_luong"])
         if trung:
             self._hien_canh_bao(thong_diep)
             self.thong_bao("Không đặt được lịch: bác sĩ bị trùng lịch")
