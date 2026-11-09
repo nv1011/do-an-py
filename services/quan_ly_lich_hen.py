@@ -1,5 +1,5 @@
 """Dịch vụ quản lý lịch hẹn (CRUD, lọc theo ngày/bác sĩ, kiểm tra trùng lịch)."""
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from utils.helpers import gio_ra_phut
 from models.lich_hen import LichHen
 from services.json_store import JsonStore
@@ -100,7 +100,7 @@ class QuanLyLichHen:
         kt = bd + thoi_luong
 
         for lh in self._danh_sach:
-            if lh.trang_thai in ("Da_huy", "Vang"):
+            if lh.trang_thai == "Da_huy":
                 continue
             if ma_lich_hen_bo_qua and lh.ma_lich_hen == ma_lich_hen_bo_qua:
                 continue
@@ -252,3 +252,46 @@ class QuanLyLichHen:
         if self.luu_du_lieu():
             return True, "Hủy lịch hẹn thành công!"
         return False, f"Lỗi khi cập nhật file: {self.store.loi_cuoi or 'không rõ nguyên nhân'}"
+
+
+    def tu_dong_huy_lich_qua_gio(self, thoi_diem_hien_tai=None):
+        """Tự động hủy các lịch hẹn ở trạng thái 'Cho_kham' nếu quá 15 phút so với giờ bắt đầu."""
+        now = thoi_diem_hien_tai or datetime.now()
+        so_luong_huy = 0
+
+        for lh in self._danh_sach:
+            if lh.trang_thai != "Cho_kham":
+                continue
+
+            # Xác định ngày hẹn dạng date
+            ngay = lh.ngay_hen
+            if isinstance(ngay, str):
+                for fmt in ("%Y-%m-%d", "%d-%m-%Y"):
+                    try:
+                        ngay = datetime.strptime(ngay.strip(), fmt).date()
+                        break
+                    except ValueError:
+                        continue
+
+            if not isinstance(ngay, date):
+                continue
+
+            try:
+                gio, phut = map(int, lh.gio_bat_dau.split(":"))
+                moc_bat_dau = datetime(ngay.year, ngay.month, ngay.day, gio, phut)
+                moc_qua_han = moc_bat_dau + timedelta(minutes=15)
+            except (ValueError, AttributeError):
+                continue
+
+            # Nếu thời điểm hiện tại đã vượt quá giờ hẹn + 15 phút mà chưa chuyển Dang_kham
+            if now > moc_qua_han:
+                lh.trang_thai = "Da_huy"
+                ghi_chu = "(Tự động hủy: Vắng [quá 15 phút không đến])"
+                if ghi_chu not in (lh.ly_do_kham or ""):
+                    lh.ly_do_kham = f"{lh.ly_do_kham} {ghi_chu}".strip() if lh.ly_do_kham else ghi_chu
+                so_luong_huy += 1
+
+        if so_luong_huy > 0:
+            self.luu_du_lieu()
+
+        return so_luong_huy
