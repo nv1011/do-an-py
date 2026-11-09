@@ -31,6 +31,7 @@ THOI_LUONG_KHAM_MAC_DINH = 30
 
 VAI_TRO_ADMIN = "admin"
 VAI_TRO_LE_TAN = "le_tan"
+VAI_TRO_BAC_SI = "bac_si"
 
 TIEU_DE_APP = "Quản lý phòng khám"
 
@@ -79,6 +80,4 @@ CA_TRUC = {
     "CHIEU": ("13:30", "17:30")
 }
 
-VAI_TRO_ADMIN = "admin"
-VAI_TRO_LE_TAN = "le_tan"
-DANH_SACH_VAI_TRO = [VAI_TRO_ADMIN, VAI_TRO_LE_TAN]
+DANH_SACH_VAI_TRO = [VAI_TRO_ADMIN, VAI_TRO_LE_TAN, VAI_TRO_BAC_SI]
