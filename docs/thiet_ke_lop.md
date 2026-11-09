@@ -1,4 +1,4 @@
-# TÀI LIỆU THIẾT KẾ LỚP VÀ CHUẨN DỮ LIỆU JSON (CLASS DESIGN & JSON SCHEMA)
+﻿# TÀI LIỆU THIẾT KẾ LỚP VÀ CHUẨN DỮ LIỆU JSON (CLASS DESIGN & JSON SCHEMA)
 
 > **Dự án**: Phần mềm Quản lý Lịch hẹn Phòng khám (Clinic Appointment Management System)  
 > **Công nghệ**: Python 3.10+, Tkinter / ttk, OOP (Lập trình hướng đối tượng), Lưu trữ JSON  
@@ -286,6 +286,7 @@ Kế thừa từ `Nguoi`, lưu trữ thông tin đội ngũ bác sĩ, chuyên kh
 | `ma_chuyen_khoa` | `str` | `string` | Khóa ngoại tham chiếu `ChuyenKhoa` | Chuyên khoa cung cấp |
 | `don_gia` | `float` | `number` | Giá trị >= 0 | Đơn giá niêm yết (VND) |
 | `mo_ta` | `str` | `string` | Chuỗi văn bản | Ghi chú yêu cầu thực hiện |
+| `trang_thai` | `bool` | `boolean` | `True` (hoạt động), `False` (ngừng hoạt động) | Trạng thái của dịch vụ |
 
 **Phương thức:**
 - `to_dict(self) -> dict`
@@ -304,7 +305,7 @@ Kế thừa từ `Nguoi`, lưu trữ thông tin đội ngũ bác sĩ, chuyên kh
 | `ngay_hen` | `date` | `string` (`YYYY-MM-DD`) | Hợp lệ *(ràng buộc >= hôm nay do Service kiểm tra khi tạo mới)* | Ngày hẹn khám |
 | `gio_bat_dau` | `str` | `string` (`HH:MM`) | Định dạng 24h từ `config.GIO_BAT_DAU_KHAM` đến `config.GIO_KET_THUC_KHAM` | Giờ bắt đầu ca khám |
 | `thoi_luong` | `int` | `integer` | Bội số 15 phút, > 0 (VD: 30, 45, 60) | Thời lượng dự kiến (phút) |
-| `trang_thai` | `str` | `string` | `"Cho_kham"`, `"Da_kham"`, `"Da_huy"`, `"Vang"` | Trạng thái của lịch hẹn |
+| `trang_thai` | `str` | `string` | `"Cho_kham"`, `"Da_kham"`, `"Da_huy"`, `"Dang_kham"` | Trạng thái của lịch hẹn |
 | `ly_do_kham` | `str` | `string` | Chuỗi văn bản | Triệu chứng ban đầu |
 
 **Thuộc tính tính toán (Computed Properties):**
@@ -312,7 +313,7 @@ Kế thừa từ `Nguoi`, lưu trữ thông tin đội ngũ bác sĩ, chuyên kh
 
 **Quy tắc kiểm tra trùng lịch (`kiem_tra_trung_lich`):**
 - Chỉ xét các lịch hẹn có cùng bác sĩ và cùng ngày.
-- **Bỏ qua các lịch hẹn đã hủy hoặc vắng mặt (`trang_thai in ("Da_huy", "Vang")`)**.
+- **Bỏ qua các lịch hẹn đã hủy (`trang_thai == "Da_huy"`)**.
 - **Bỏ qua chính mã lịch hẹn đang chỉnh sửa** (để người dùng có thể cập nhật thông tin khác mà không tự báo trùng với chính mình).
 - Điều kiện xung đột thời gian giữa 2 ca:
   `max(bat_dau_1, bat_dau_2) < min(ket_thuc_1, ket_thuc_2)`
@@ -361,7 +362,8 @@ Quản lý tài khoản đăng nhập và phân quyền hệ thống (bảo mậ
 | `ten_dang_nhap` | `str` | `string` | Duy nhất, >= 3 ký tự, không chứa dấu cách | Tên tài khoản |
 | `mat_khau_hash` | `str` | `string` | Chuỗi SHA-256 (64 ký tự hex) | Mật khẩu đã băm kèm salt |
 | `salt` | `str` | `string` | Chuỗi ngẫu nhiên 32 ký tự hex | Chuỗi muối chống tra từ điển |
-| `vai_tro` | `str` | `string` | Đúng một trong 2 vai trò: `"admin"`, `"le_tan"` | Phân quyền sử dụng |
+| `vai_tro` | `str` | `string` | Một trong 3 vai trò: `"admin"`, `"le_tan"`, `"bac_si"` | Phân quyền sử dụng hệ thống |
+| `ma_bac_si` | `str | None` | `string | null` | Mã 9 số của bác sĩ (bắt buộc khi `vai_tro == "bac_si"`, `None` với admin/le_tan) | Liên kết tài khoản với bác sĩ |
 | `trang_thai` | `bool` | `boolean` | `True` (hoạt động), `False` (bị khóa) | Trạng thái tài khoản |
 | `ngay_tao` | `date` | `string` (`YYYY-MM-DD`) | Ngày tạo tài khoản | Ngày cấp |
 
@@ -393,23 +395,97 @@ Chi tiết hợp đồng hàm giữa Services và Views được quy định t�
 - Giao diện UI (Thành viên B) **import trực tiếp các hàm kiểm tra từ `utils/validators.py`** (`la_sdt_hop_le`, `la_ma_bhyt_hop_le`, `la_ngay_hop_le`, `la_email_hop_le`) để validate form ngay lúc nhập, tránh việc tự viết hoặc chép lại regex thủ công gây lệch chuẩn.
 - Tầng Model và Service vẫn là chốt chặn kiểm tra validation cuối cùng trước khi ghi vào dữ liệu.
 
-### 4.3. Bảng Ma trận Phân quyền Sử dụng Hệ thống
-Hệ thống áp dụng 2 vai trò: `admin` và `le_tan`. Lưu ý: **Phân quyền do tầng Giao diện (UI) chịu trách nhiệm thực thi** (ẩn các tab hoặc disable các nút bấm theo vai trò người dùng sau khi đăng nhập thành công).
+### 4.3. Bảng Ma trận Phân quyền Sử dụng Hệ thống (Role-Based Access Control)
 
-| Chức năng nghiệp vụ | `admin` | `le_tan` | Cơ chế UI & Ghi chú |
-| :--- | :---: | :---: | :--- |
-| Xem danh sách bệnh nhân, bác sĩ, lịch hẹn | ✓ | ✓ | Toàn quyền xem |
-| Thêm bệnh nhân mới (`them`) | ✓ | ✓ | Tiếp nhận hồ sơ ban đầu |
-| Đặt lịch hẹn, sửa lịch, hủy lịch hẹn | ✓ | ✓ | Phối hợp tiếp nhận và điều phối |
-| Sửa thông tin, Xóa hồ sơ bệnh nhân (`sua`, `xoa`) | ✓ | ✗ | UI disable / ẩn nút Sửa và Xóa |
-| Quản lý đội ngũ bác sĩ (`QuanLyBacSi`) | ✓ | ✗ | UI ẩn chức năng quản lý nhân sự |
-| Quản lý tài khoản hệ thống (`QuanLyTaiKhoan`) | ✓ | ✗ | UI ẩn tab Quản trị tài khoản |
-| Tạo phiếu khám ban đầu (`tao_phieu_kham`), Thêm dịch vụ | ✓ | ✓ | Lễ tân lập phiếu tiếp đón ban đầu |
-| Thu ngân thanh toán viện phí (`thanh_toan`) | ✓ | ✓ | Lễ tân thu tiền và in hóa đơn |
-| **Hoàn tất khám bệnh (`hoan_tat_kham`)** | **✓** | **✗** | **Lễ tân không có quyền** (Chỉ admin / bác sĩ chuyên môn mới được chẩn đoán và kê đơn) |
-| Tab Thống kê doanh thu, lượt khám & Xuất báo cáo | ✓ | ✗ | UI ẩn hoàn toàn Tab Thống kê |
+Hệ thống quản lý phòng khám áp dụng mô hình phân quyền theo vai trò (RBAC) với **3 vai trò chuẩn**: `admin` (Quản trị viên), `le_tan` (Nhân viên lễ tân), và `bac_si` (Bác sĩ chuyên môn).
+
+#### 4.3.1. Phân định Trách nhiệm và Phạm vi của Từng Vai trò
+
+1. **`admin` (Quản trị viên hệ thống)**:
+   - Toàn quyền vận hành, cấu hình danh mục và quản trị nhân sự.
+   - Quản lý tài khoản người dùng (`QuanLyTaiKhoan`), đặt lại mật khẩu, mở/khóa tài khoản.
+   - Quản lý thông tin bác sĩ, bảng phân ca trực (`QuanLyBacSi`).
+   - Có quyền thực hiện các thao tác quản trị rủi ro cao: Sửa/xóa hồ sơ bệnh nhân, can thiệp khẩn cấp vào phiếu khám bệnh.
+   - Toàn quyền truy cập phân hệ Thống kê - Báo cáo doanh thu, lượt khám và xuất báo cáo ra file Excel (`.csv`).
+
+2. **`le_tan` (Nhân viên Lễ tân / Tiếp đón)**:
+   - Chịu trách nhiệm tiếp nhận và hướng dẫn bệnh nhân: Tạo mới hồ sơ bệnh nhân (`them`).
+   - Quản lý điều phối lịch hẹn: Đặt lịch khám mới, dời lịch, hủy ca hẹn theo yêu cầu (`dat_lich`, `sua_lich`, `huy_lich`).
+   - Tiếp đón bệnh nhân đến phòng khám: Khởi tạo phiếu khám ban đầu (`tao_phieu_kham`), chọn các dịch vụ cận lâm sàng/khám ban đầu theo yêu cầu của bệnh nhân.
+   - Thu ngân: Thu tiền viện phí và xác nhận trạng thái thanh toán (`thanh_toan`).
+   - **Giới hạn nghiêm ngặt**: Không được phép chẩn đoán, kê đơn hoặc hoàn tất phiếu khám (`hoan_tat_kham` là nghiệp vụ y khoa độc quyền của bác sĩ); không được sửa hoặc xóa hồ sơ bệnh nhân; không xem được số liệu thống kê tài chính phòng khám.
+
+3. **`bac_si` (Bác sĩ chuyên môn)**:
+   - Phụ trách trực tiếp công tác khám chữa bệnh chuyên môn cho bệnh nhân.
+   - Chỉ định các dịch vụ y tế, xét nghiệm, chẩn đoán hình ảnh bổ sung trong quá trình thăm khám (`them_dich_vu`, `xoa_dich_vu`).
+   - Kết luận chẩn đoán bệnh, kê đơn thuốc chi tiết kèm liều dùng, ghi lời dặn và hẹn ngày tái khám.
+   - Ký duyệt hoàn tất ca khám (`hoan_tat_kham`), chuyển trạng thái phiếu sang `Hoan_thanh`.
+   - Xem lịch trực tuần và lịch hẹn của bản thân.
+   - **Giới hạn nghiêm ngặt**: Chỉ được phép thao tác trên các phiếu khám và bệnh nhân thuộc phạm vi phụ trách của mình (xem mục 4.3.4); không được thu tiền thanh toán (`thanh_toan`); không quản lý nhân sự hay xem thống kê tổng thể.
+
+#### 4.3.2. Bảng Ma trận Phân quyền Nghiệp vụ Chi tiết
+
+| Chức năng nghiệp vụ | `admin` | `le_tan` | `bac_si` | Cơ chế Thực thi UI & Tầng Nghiệp vụ (Service) |
+| :--- | :---: | :---: | :---: | :--- |
+| **Xem danh sách bệnh nhân** | ✓ | ✓ | ✓* | Bác sĩ chỉ xem danh sách bệnh nhân có lịch hẹn hoặc phiếu khám với mình (`*`) |
+| **Thêm bệnh nhân mới (`them`)** | ✓ | ✓ | ✗ | Bác sĩ bị ẩn nút hoặc vô hiệu hóa form thêm bệnh nhân |
+| **Sửa / Xóa hồ sơ bệnh nhân (`sua`, `xoa`)** | ✓ | ✗ | ✗ | UI ẩn/disable nút Sửa và Xóa đối với lễ tân và bác sĩ. Service kiểm tra ràng buộc không xóa bệnh nhân đang có lịch chờ |
+| **Đặt, Sửa, Hủy lịch hẹn** | ✓ | ✓ | ✗ | Lễ tân và Admin thực hiện điều phối; Bác sĩ không tự ý đổi lịch hẹn |
+| **Xem lịch hẹn & Lịch làm việc** | ✓ | ✓ | ✓* | Bác sĩ chỉ xem lịch trực và các ca hẹn của chính mình |
+| **Quản lý danh sách bác sĩ (`QuanLyBacSi`)** | ✓ | ✗ | ✗ | UI ẩn menu/tab Quản lý bác sĩ đối với lễ tân và bác sĩ |
+| **Quản trị tài khoản (`QuanLyTaiKhoan`)** | ✓ | ✗ | ✗ | UI ẩn tab Quản trị tài khoản. Service yêu cầu `nguoi_thuc_hien` phải là admin đang hoạt động |
+| **Tạo phiếu khám (`tao_phieu_kham`)** | ✓ | ✓ | ✓ | Lễ tân tạo phiếu tiếp đón ban đầu; Bác sĩ tạo khi bệnh nhân vào buồng khám |
+| **Chỉ định dịch vụ (`them_dich_vu`, `xoa_dich_vu`)** | ✓ | ✓ | ✓ | Cả 3 vai trò đều có thể gắn dịch vụ kỹ thuật/khám vào phiếu |
+| **Hoàn tất khám & Kê đơn (`hoan_tat_kham`)** | ✓ | ✗ | ✓* | **Lễ tân tuyệt đối không có quyền**. Bác sĩ chỉ hoàn tất phiếu khám do chính mình phụ trách (`ma_bac_si`) |
+| **Thu ngân thanh toán (`thanh_toan`)** | ✓ | ✓ | ✗ | Thuộc nghiệp vụ thu ngân/tiếp đón. Bác sĩ không tham gia thu viện phí |
+| **Thống kê doanh thu & Xuất báo cáo (`ThongKe`)** | ✓ | ✗ | ✗ | UI ẩn hoàn toàn Tab Thống kê đối với lễ tân và bác sĩ |
+
+#### 4.3.3. Cơ chế Thực thi Phân quyền 2 Lớp (Defense-in-Depth)
+
+Hệ thống bảo đảm tính an toàn dữ liệu bằng kiến trúc kiểm soát quyền 2 tầng độc lập:
+
+1. **Lớp 1: Kiểm soát trên Giao diện (UI Access Control - Frontend Enforcement)**:
+   - **Điều hướng Tab (Tab Navigation)**: Sau khi đăng nhập thành công, `MainWindow` nhận diện vai trò `vai_tro` từ đối tượng kết quả:
+     - Nếu `vai_tro != "admin"`: Ẩn tab "Thống kê" và ẩn mục menu "Hệ thống -> Quản trị tài khoản" hoặc "Quản lý bác sĩ".
+     - Nếu `vai_tro == "bac_si"`: Chuyển giao diện mặc định vào buồng khám/lịch cá nhân, ẩn các form thêm mới bệnh nhân và form tiếp nhận đặt lịch.
+   - **Vô hiệu hóa thao tác (Button Disabling & Dialog Shielding)**:
+     - Trên Tab Bệnh nhân: Các nút "Sửa thông tin", "Xóa bệnh nhân" bị `state="disabled"` hoặc ẩn hoàn toàn đối với lễ tân và bác sĩ.
+     - Trên Tab Phiếu khám: Nút "Hoàn tất khám / Kê đơn" bị khóa đối với lễ tân; nút "Thanh toán viện phí" bị khóa đối với bác sĩ.
+
+2. **Lớp 2: Kiểm soát tại Tầng Dịch vụ (Service-Level Security - Backend Enforcement)**:
+   - **Xác thực danh tính thực hiện (`nguoi_thuc_hien`)**:
+     - Các phương thức can thiệp quản trị tài khoản trong `QuanLyTaiKhoan` (`tao_tai_khoan`, `khoa_tai_khoan`, `xoa_tai_khoan`, `dat_lai_mat_khau`) đều nhận tham số `nguoi_thuc_hien: str`.
+     - Service tự động truy xuất tài khoản người gọi: bắt buộc phải tồn tại, đang ở trạng thái `trang_thai = True` và có `vai_tro == "admin"`. Nếu không thỏa mãn, trả về ngay `(False, "Bạn không có quyền thực hiện chức năng này!", None)`.
+     - Cơ chế chống tự khóa/tự xóa: Hệ thống không cho phép admin tự khóa hoặc tự xóa tài khoản của chính bản thân, đồng thời bảo vệ tài khoản `admin` mặc định.
+   - **Kiểm soát tính hợp lệ của ca khám (`QuanLyPhieuKham`)**:
+     - Khi gọi `hoan_tat_kham`, Service kiểm tra phiếu khám: Nếu người thực hiện là bác sĩ, `ma_bac_si` của phiếu phải trùng với mã bác sĩ của tài khoản thực hiện.
+
+#### 4.3.4. Đặc tả Cơ chế và Phân vùng Dữ liệu cho Vai trò Bác sĩ (`bac_si`)
+
+Để bảo đảm quyền riêng tư của bệnh nhân và tối ưu hóa luồng làm việc lâm sàng, tài khoản bác sĩ được liên kết chặt chẽ với thực thể Bác sĩ trong cơ sở dữ liệu:
+
+1. **Liên kết Thực thể (Entity Binding)**:
+   - Mỗi tài khoản bác sĩ trong `data/tai_khoan.json` lưu thêm thuộc tính `ma_bac_si` (chuỗi 9 chữ số).
+   - Ràng buộc khi tạo tài khoản: `ma_bac_si` bắt buộc phải tồn tại trong `QuanLyBacSi` và tại một thời điểm mỗi bác sĩ chỉ gắn với tối đa 1 tài khoản hoạt động.
+   - Sau khi bác sĩ đăng nhập, UI lưu lại `ma_bac_si` bằng cách gọi `QuanLyTaiKhoan.tim_theo_ten(ten).ma_bac_si`.
+
+2. **Cơ chế Phân vùng Dữ liệu cá nhân hóa (Personalized Data Scope)**:
+   - **Phân hệ Lịch hẹn**:
+     - Thay vì tải toàn bộ ca hẹn của cả phòng khám, giao diện gọi `QuanLyLichHen.loc_lich_hen(ngay=..., ma_bac_si=ma_bac_si_hien_tai)`.
+     - Bác sĩ chỉ theo dõi được lịch làm việc, danh sách bệnh nhân đã đặt hẹn với chính mình, tránh tình trạng quá tải thông tin.
+   - **Phân hệ Danh sách Bệnh nhân**:
+     - Bác sĩ chỉ cần quản lý các bệnh nhân thuộc hồ sơ điều trị của mình.
+     - Quy trình lọc:
+       1. Gọi `QuanLyLichHen.lay_ma_benh_nhan_cua_bac_si(ma_bs)` để lấy tập hợp mã bệnh nhân có lịch hẹn (bỏ qua các lịch đã hủy).
+       2. Gọi `QuanLyPhieuKham.lay_theo_bac_si(ma_bs)` để lấy thêm các mã bệnh nhân đã từng được bác sĩ khám.
+       3. Hợp nhất hai tập mã trên thành `tap_ma_benh_nhan`.
+       4. Gọi `QuanLyBenhNhan.lay_theo_cac_ma(tap_ma_benh_nhan)` để hiển thị danh sách hồ sơ cần theo dõi.
+   - **Phân hệ Phiếu khám bệnh**:
+     - Bác sĩ lọc phiếu qua `QuanLyPhieuKham.lay_theo_bac_si(ma_bs)`.
+     - Chỉ cho phép chỉnh sửa chẩn đoán, thêm/xóa dịch vụ và bấm nút "Hoàn tất khám" trên các phiếu do chính mình phụ trách. Không được can thiệp vào phiếu khám của đồng nghiệp khác.
 
 ---
+
 
 ## 5. ĐẶC TẢ JSON SCHEMA CHO CÁC TẬP TIN DỮ LIỆU (DATA LAYER)
 
@@ -737,7 +813,7 @@ Toàn bộ các file trong thư mục `data/` tuân thủ JSON Schema chuẩn sa
       "thoi_luong": { "type": "integer", "minimum": 15 },
       "trang_thai": {
         "type": "string",
-        "enum": ["Cho_kham", "Da_kham", "Da_huy", "Vang"]
+        "enum": ["Cho_kham", "Dang_kham", "Da_kham", "Da_huy"]
       },
       "ly_do_kham": { "type": "string" }
     }
@@ -955,7 +1031,7 @@ Toàn bộ các file trong thư mục `data/` tuân thủ JSON Schema chuẩn sa
 | `DichVu` | `models/dich_vu.py` | `ma_dich_vu` | `ma_chuyen_khoa` | `data/dich_vu.json` | Tiền tố `DV` |
 | `LichHen` | `models/lich_hen.py` | `ma_lich_hen` | `ma_benh_nhan`, `ma_bac_si` | `data/lich_hen.json` | Tiền tố `LH` |
 | `PhieuKham` | `models/phieu_kham.py` | `ma_phieu_kham` | `ma_lich_hen`, `ma_benh_nhan`, `ma_bac_si` | `data/phieu_kham.json` | Tiền tố `PK`, dùng `chan_doan` |
-| `TaiKhoan` | `models/tai_khoan.py` | `ten_dang_nhap` | Không | `data/tai_khoan.json` | Hash + salt, 2 vai trò |
+| `TaiKhoan` | `models/tai_khoan.py` | `ten_dang_nhap` | `ma_bac_si` (với vai trò bac_si) | `data/tai_khoan.json` | Hash + salt, 3 vai trò (`admin`, `le_tan`, `bac_si`) |
 
 ---
 
