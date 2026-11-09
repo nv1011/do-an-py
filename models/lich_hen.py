@@ -99,7 +99,7 @@ class LichHen:
     @trang_thai.setter
     def trang_thai(self, value):
         val = (value or "").strip()
-        trang_thai_hop_le = ("Cho_kham", "Da_kham", "Da_huy", "Vang")
+        trang_thai_hop_le = ("Cho_kham", "Dang_kham", "Da_kham", "Da_huy")
         if val not in trang_thai_hop_le:
             raise ValueError(f"Trạng thái lịch hẹn phải thuộc: {', '.join(trang_thai_hop_le)}")
         self._trang_thai = val
