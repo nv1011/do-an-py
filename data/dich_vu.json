@@ -4,41 +4,175 @@
     "ten_dich_vu": "Khám lâm sàng nội khoa",
     "ma_chuyen_khoa": "01",
     "don_gia": 150000,
-    "mo_ta": "Khám và tư vấn sức khỏe tổng quát với bác sĩ chuyên khoa"
+    "mo_ta": "Khám, tư vấn và điều trị các bệnh lý nội khoa tổng quát",
+    "trang_thai": true
   },
   {
     "ma_dich_vu": "DV002",
-    "ten_dich_vu": "Nội soi Tai Mũi Họng",
-    "ma_chuyen_khoa": "04",
-    "don_gia": 250000,
-    "mo_ta": "Nội soi ống mềm không đau chất lượng cao"
+    "ten_dich_vu": "Đo điện tim (ECG)",
+    "ma_chuyen_khoa": "01",
+    "don_gia": 120000,
+    "mo_ta": "Ghi điện tâm đồ đánh giá nhịp tim và các bệnh lý tim mạch cơ bản",
+    "trang_thai": true
   },
   {
     "ma_dich_vu": "DV003",
-    "ten_dich_vu": "Siêu âm bụng tổng quát",
-    "ma_chuyen_khoa": "01",
-    "don_gia": 200000,
-    "mo_ta": "Kiểm tra gan, mật, tụy, lách, thận, bàng quang"
+    "ten_dich_vu": "Khám và tư vấn ngoại tổng quát",
+    "ma_chuyen_khoa": "02",
+    "don_gia": 150000,
+    "mo_ta": "Khám và đánh giá các bệnh lý ngoại khoa cần can thiệp hoặc theo dõi",
+    "trang_thai": true
   },
   {
     "ma_dich_vu": "DV004",
-    "ten_dich_vu": "Khám chuyên khoa Nhi",
+    "ten_dich_vu": "Sơ cứu và xử lý vết thương",
     "ma_chuyen_khoa": "02",
-    "don_gia": 150000,
-    "mo_ta": "Khám bệnh tổng quát cho trẻ em"
+    "don_gia": 200000,
+    "mo_ta": "Sơ cấp cứu, sát trùng, cắt lọc và khâu vết thương hở",
+    "trang_thai": true
   },
   {
     "ma_dich_vu": "DV005",
-    "ten_dich_vu": "Lấy cao răng siêu âm",
+    "ten_dich_vu": "Khám và tư vấn sản phụ khoa",
     "ma_chuyen_khoa": "03",
     "don_gia": 180000,
-    "mo_ta": "Vệ sinh răng miệng và lấy vôi răng"
+    "mo_ta": "Khám thai định kỳ, tư vấn sức khỏe sinh sản và kế hoạch hóa gia đình",
+    "trang_thai": true
   },
   {
     "ma_dich_vu": "DV006",
-    "ten_dich_vu": "Đo khúc xạ và khám mắt",
+    "ten_dich_vu": "Soi cổ tử cung tầm soát",
+    "ma_chuyen_khoa": "03",
+    "don_gia": 250000,
+    "mo_ta": "Kiểm tra tế bào cổ tử cung, tầm soát sớm tổn thương và ung thư cổ tử cung",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV007",
+    "ten_dich_vu": "Khám chuyên khoa Nhi",
+    "ma_chuyen_khoa": "04",
+    "don_gia": 150000,
+    "mo_ta": "Khám, tư vấn và điều trị bệnh lý thông thường cho trẻ sơ sinh và trẻ em",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV008",
+    "ten_dich_vu": "Xông khí dung điều trị hô hấp",
+    "ma_chuyen_khoa": "04",
+    "don_gia": 100000,
+    "mo_ta": "Hỗ trợ điều trị các bệnh lý đường hô hấp, hen suyễn, viêm phế quản ở trẻ em",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV009",
+    "ten_dich_vu": "Khám Tai - Mũi - Họng tổng quát",
     "ma_chuyen_khoa": "05",
+    "don_gia": 150000,
+    "mo_ta": "Khám lâm sàng và đánh giá tình trạng tai, mũi, họng",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV010",
+    "ten_dich_vu": "Nội soi Tai - Mũi - Họng ống mềm",
+    "ma_chuyen_khoa": "05",
+    "don_gia": 250000,
+    "mo_ta": "Nội soi kỹ thuật cao không đau, phát hiện sớm các bệnh lý sâu trong hốc mũi, vòm họng", 
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV011",
+    "ten_dich_vu": "Khám mắt và đo khúc xạ",
+    "ma_chuyen_khoa": "06",
     "don_gia": 120000,
-    "mo_ta": "Kiểm tra thị lực và đo độ cận/loạn"
+    "mo_ta": "Kiểm tra thị lực, đo độ cận, viễn, loạn thị bằng máy điện tử",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV012",
+    "ten_dich_vu": "Lấy dị vật kết mạc / giác mạc",
+    "ma_chuyen_khoa": "06",
+    "don_gia": 180000,
+    "mo_ta": "Xử lý, lấy bụi hoặc dị vật bám ở bề mặt mắt an toàn",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV013",
+    "ten_dich_vu": "Khám và tư vấn Răng - Hàm - Mặt",
+    "ma_chuyen_khoa": "07",
+    "don_gia": 100000,
+    "mo_ta": "Kiểm tra tổng quát sức khỏe răng miệng và tư vấn phương án điều trị",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV014",
+    "ten_dich_vu": "Lấy cao răng siêu âm",
+    "ma_chuyen_khoa": "07",
+    "don_gia": 180000,
+    "mo_ta": "Vệ sinh răng miệng, loại bỏ mảng bám và vôi răng bằng sóng siêu âm",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV015",
+    "ten_dich_vu": "Hàn / Trám răng thẩm mỹ",
+    "ma_chuyen_khoa": "07",
+    "don_gia": 250000,
+    "mo_ta": "Phục hồi răng sâu, răng mẻ bằng vật liệu Composite thẩm mỹ",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV016",
+    "ten_dich_vu": "Khám và điều trị bệnh lý da liễu",
+    "ma_chuyen_khoa": "08",
+    "don_gia": 150000,
+    "mo_ta": "Khám, tư vấn và điều trị các bệnh lý ngoài da, dị ứng, viêm da, mụn trứng cá",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV017",
+    "ten_dich_vu": "Chụp X-quang phổi thẳng",
+    "ma_chuyen_khoa": "09",
+    "don_gia": 160000,
+    "mo_ta": "Chụp X-quang kỹ thuật số đánh giá lồng ngực và phổi độ nét cao",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV018",
+    "ten_dich_vu": "Siêu âm bụng tổng quát",
+    "ma_chuyen_khoa": "09",
+    "don_gia": 200000,
+    "mo_ta": "Kiểm tra hình ảnh gan, mật, tụy, lách, thận, bàng quang",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV019",
+    "ten_dich_vu": "Siêu âm tuyến giáp / phần mềm",
+    "ma_chuyen_khoa": "09",
+    "don_gia": 220000,
+    "mo_ta": "Đánh giá cấu trúc, phát hiện nhân xơ, bướu cổ hoặc tổn thương phần mềm",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV020",
+    "ten_dich_vu": "Xét nghiệm Công thức máu (CBC)",
+    "ma_chuyen_khoa": "10",
+    "don_gia": 90000,
+    "mo_ta": "Phân tích các thành phần tế bào máu, tầm soát thiếu máu và nhiễm trùng",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV021",
+    "ten_dich_vu": "Xét nghiệm Sinh hóa máu cơ bản",
+    "ma_chuyen_khoa": "10",
+    "don_gia": 250000,
+    "mo_ta": "Đánh giá chức năng gan (AST, ALT), thận (Ure, Creatinine), đường huyết và mỡ máu",
+    "trang_thai": true
+  },
+  {
+    "ma_dich_vu": "DV022",
+    "ten_dich_vu": "Xét nghiệm Nước tiểu toàn phần",
+    "ma_chuyen_khoa": "10",
+    "don_gia": 80000,
+    "mo_ta": "Phân tích 10 thông số nước tiểu tầm soát bệnh lý tiết niệu và chuyển hóa",
+    "trang_thai": true
   }
 ]
