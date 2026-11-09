@@ -9,13 +9,7 @@ class QuanLyPhieuKham:
     """Quản lý danh sách phiếu khám bệnh, điều phối cận lâm sàng, đơn thuốc và thanh toán."""
 
     def __init__(self, json_store=None, ten_file=FILE_PHIEU_KHAM, quan_ly_dich_vu=None):
-        """Khởi tạo dịch vụ quản lý phiếu khám.
-
-        Tham số:
-            json_store (JsonStore | None): Bộ lưu trữ JsonStore.
-            ten_file (Path | str): Đường dẫn file JSON phiếu khám.
-            quan_ly_dich_vu: Danh mục dịch vụ hoặc service để lấy giá niêm yết.
-        """
+        """Khởi tạo dịch vụ quản lý phiếu khám."""
         self.store = json_store or JsonStore()
         self.ten_file = ten_file
         self.quan_ly_dich_vu = quan_ly_dich_vu
@@ -89,17 +83,7 @@ class QuanLyPhieuKham:
         return sorted(self._bang_dich_vu.values(), key=lambda d: d.get("ma_dich_vu", ""))
 
     def tao_phieu_kham(self, du_lieu):
-        """Khởi tạo phiếu khám ban đầu (từ lịch hẹn hoặc khám vãng lai).
-
-        Trạng thái ban đầu: 'Dang_kham', 'Chua_thanh_toan'.
-        Quyền: admin, le_tan, bac_si.
-
-        Tham số:
-            du_lieu (dict): Gồm ma_benh_nhan, ma_bac_si, trieu_chung, [ma_lich_hen], [ngay_kham].
-
-        Trả về:
-            tuple[bool, str, PhieuKham | None]
-        """
+        """Khởi tạo phiếu khám ban đầu (từ lịch hẹn hoặc khám vãng lai)."""
         ma_bn = str(du_lieu.get("ma_benh_nhan") or "").strip()
         ma_bs = str(du_lieu.get("ma_bac_si") or "").strip()
         trieu_chung = str(du_lieu.get("trieu_chung") or "").strip()
@@ -149,19 +133,7 @@ class QuanLyPhieuKham:
             return False, str(e), None
 
     def them_dich_vu(self, ma_pk, ma_dv, so_luong=1):
-        """Thêm dịch vụ kỹ thuật / cận lâm sàng vào phiếu khám.
-
-        Chụp lại đơn giá niêm yết tại thời điểm thêm.
-        Quyền: admin, le_tan, bac_si.
-
-        Tham số:
-            ma_pk (str): Mã phiếu khám.
-            ma_dv (str): Mã dịch vụ y tế.
-            so_luong (int): Số lượng chỉ định (mặc định 1).
-
-        Trả về:
-            tuple[bool, str]
-        """
+        """Thêm dịch vụ kỹ thuật / cận lâm sàng vào phiếu khám."""
         pk = self.tim_theo_ma(ma_pk)
         if not pk:
             return False, f"Không tìm thấy phiếu khám '{ma_pk}'!"
@@ -220,23 +192,7 @@ class QuanLyPhieuKham:
         return False, f"Lỗi lưu file: {self.store.loi_cuoi}"
 
     def hoan_tat_kham(self, ma_pk, chan_doan, loi_dan, don_thuoc, ngay_tai_kham=None, nguoi_thuc_hien=None):
-        """Hoàn tất quá trình khám bệnh, chẩn đoán, kê đơn thuốc và hẹn tái khám.
-
-        Chuyển trang_thai_kham sang 'Hoan_thanh'.
-        Quyền: admin, bac_si (Lễ tân không có quyền).
-        Nếu là vai trò bác sĩ: chỉ được hoàn tất phiếu khám do chính mình phụ trách.
-
-        Tham số:
-            ma_pk (str): Mã phiếu khám.
-            chan_doan (str): Kết luận bệnh lý (bắt buộc).
-            loi_dan (str): Dặn dò dùng thuốc / sinh hoạt.
-            don_thuoc (list[dict]): Danh sách thuốc [{'ten_thuoc', 'don_vi', 'so_luong', 'cach_dung'}].
-            ngay_tai_kham (str | date | None): Ngày hẹn tái khám (định dạng DD-MM-YYYY hoặc YYYY-MM-DD).
-            nguoi_thuc_hien (dict | str | None): Thông tin người gọi thao tác để kiểm tra quyền.
-
-        Trả về:
-            tuple[bool, str]
-        """
+        """Hoàn tất quá trình khám bệnh, chẩn đoán, kê đơn thuốc và hẹn tái khám."""
         pk = self.tim_theo_ma(ma_pk)
         if not pk:
             return False, f"Không tìm thấy phiếu khám '{ma_pk}'!"
@@ -309,17 +265,7 @@ class QuanLyPhieuKham:
         return False, f"Lỗi lưu file: {self.store.loi_cuoi}"
 
     def thanh_toan(self, ma_pk):
-        """Xác nhận bệnh nhân đã thanh toán viện phí.
-
-        Chuyển trang_thai_thanh_toan sang 'Da_thanh_toan'.
-        Quyền: admin, le_tan (Bác sĩ không có quyền).
-
-        Tham số:
-            ma_pk (str): Mã phiếu khám.
-
-        Trả về:
-            tuple[bool, str, float]: (Thành công, Thông điệp, Tổng tiền đã thu).
-        """
+        """Xác nhận bệnh nhân đã thanh toán viện phí."""
         pk = self.tim_theo_ma(ma_pk)
         if not pk:
             return False, f"Không tìm thấy phiếu khám '{ma_pk}'!", 0.0
