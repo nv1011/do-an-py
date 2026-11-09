@@ -118,11 +118,12 @@ Quyền đặt, sửa, hủy lịch: `admin`, `le_tan`. Vai trò `bac_si` chỉ 
 | `loc_lich_hen(ngay = None, ma_bac_si = None)` | `list[LichHen]` | Lọc lịch hẹn phục vụ hiển thị Treeview và Thẻ lịch hẹn (AppointmentCard) trên Tab Lịch hẹn. Vai trò `bac_si` luôn truyền `ma_bac_si` của chính mình |
 | `lay_ma_benh_nhan_cua_bac_si(ma_bac_si)` | `set[str]` | *(Mới)* Mã các bệnh nhân có lịch hẹn với bác sĩ này (trừ lịch `Da_huy`). Dùng cho danh sách bệnh nhân của vai trò `bac_si` |
 | `lay_danh_sach_bac_si_ranh(ngay, gio_bat_dau, thoi_luong, ma_khoa = None)` | `list[BacSi]` | Lấy danh sách các bác sĩ có lịch trực trong buổi đó và **chưa bị trùng lịch hẹn** trong khung giờ yêu cầu |
-| `kiem_tra_trung_lich(ma_bac_si, ngay, gio_bat_dau, thoi_luong, ma_lich_hen_bo_qua = None)` | `tuple[bool, str]` | Trả về `(True, "Trùng lịch...")` nếu bác sĩ đã có lịch hẹn giao nhau thời gian; trả về `(False, "")` nếu rảnh. **Bỏ qua lịch `Da_huy`, `Vang` và chính mã lịch đang chỉnh sửa** |
+| `kiem_tra_trung_lich(ma_bac_si, ngay, gio_bat_dau, thoi_luong, ma_lich_hen_bo_qua = None)` | `tuple[bool, str]` | Trả về `(True, "Trùng lịch...")` nếu bác sĩ đã có lịch hẹn giao nhau thời gian; trả về `(False, "")` nếu rảnh. **Bỏ qua lịch `Da_huy` và chính mã lịch đang chỉnh sửa** |
 | `dat_lich(du_lieu: dict)` | `tuple[bool, str, LichHen \| None]` | Đặt lịch hẹn mới. **Bắt buộc kiểm tra `ngay >= date.today()`** và gọi `kiem_tra_trung_lich` trước khi lưu |
 | `sua_lich(ma: str, du_lieu_moi: dict)` | `tuple[bool, str]` | Sửa thông tin lịch hẹn (kiểm tra trùng lịch có trừ chính mã này ra) |
 | `huy_lich(ma: str, ly_do: str = "")` | `tuple[bool, str]` | Chuyển trạng thái lịch hẹn sang `"Da_huy"`. Giải phóng khung giờ để người khác có thể đặt |
 | `sinh_ma_moi()` | `str` | Sinh mã dạng `LH001`, `LH002`... |
+| `tu_dong_huy_lich_qua_gio(thoi_diem_hien_tai = None)` | `int` | *(Mới)* Tự động quét và hủy các lịch hẹn đang ở trạng thái `Cho_kham` nếu quá 15 phút so với giờ bắt đầu hẹn mà chưa chuyển sang `Dang_kham`. Trả về số ca lịch bị hủy |
 
 ---
 
