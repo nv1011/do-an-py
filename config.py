@@ -66,7 +66,16 @@ MAU_BIEU_DO_NEN = "#fcfcfb"
 MAU_BIEU_DO_CHU = "#0b0b0b"
 MAU_BIEU_DO_CHU_PHU = "#52514e"
 MAU_BIEU_DO_LUOI = "#e3e2df"
-MAU_BIEU_DO = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"]
+MAU_BIEU_DO = [
+    "#2a78d6",
+    "#eb6834",
+    "#1baf7a",
+    "#eda100",
+    "#e87ba4",
+    "#008300",
+    "#6250d6",
+    "#e34948",
+]
 
 DANH_SACH_TAB = ["Bệnh nhân", "Lịch hẹn", "Phiếu khám", "Thống kê"]
 
@@ -74,11 +83,174 @@ GIO_BAT_DAU_KHAM = "07:00"
 GIO_KET_THUC_KHAM = "18:00"
 BUOC_THOI_LUONG_PHUT = 15
 
-CA_TRUC = {
-    "SANG": ("07:30", "11:30"),
-    "CHIEU": ("13:30", "17:30")
-}
+CA_TRUC = {"SANG": ("07:30", "11:30"), "CHIEU": ("13:30", "17:30")}
 
 VAI_TRO_ADMIN = "admin"
 VAI_TRO_LE_TAN = "le_tan"
 DANH_SACH_VAI_TRO = [VAI_TRO_ADMIN, VAI_TRO_LE_TAN]
+
+
+# ---------- Dữ liệu mẫu (dùng bởi services/tao_du_lieu_mau.py) ----------
+FILE_TINH_THANH = DATA_DIR / "tinh_thanh.json"
+
+SO_BENH_NHAN = 30
+SO_BAC_SI = 8
+SEED = None
+SO_NGAY_DANG_KY = 60
+SO_CA_MOI_TUAN = 3
+
+# Khoảng giá trị các cặp số trong mã bác sĩ: HH CC YY SSS
+HOC_VI_MIN, HOC_VI_MAX = 1, 3
+CHUYEN_KHOA_MIN, CHUYEN_KHOA_MAX = 1, 10
+NAM_VAO_LAM_MIN, NAM_VAO_LAM_MAX = 0, 26
+
+TUOI_TOI_THIEU_BAC_SI = 25
+NAM_SINH_SOM_NHAT_BAC_SI = 1961
+# Khóa trùng với HOC_VI ở đầu file: 01 = TS, 02 = ThS, 03 = BS
+LUONG_NEN = {"01": 23_000_000, "02": 19_000_000, "03": 16_000_000}
+
+HO = [
+    "Nguyễn",
+    "Trần",
+    "Lê",
+    "Phạm",
+    "Hoàng",
+    "Huỳnh",
+    "Phan",
+    "Vũ",
+    "Võ",
+    "Đặng",
+    "Bùi",
+    "Đỗ",
+    "Hồ",
+    "Ngô",
+    "Dương",
+    "Lý",
+]
+TRONG_SO_HO = [30, 11, 10, 7, 5, 5, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2]
+DEM_NAM = ["Văn", "Đức", "Minh", "Quang", "Quốc", "Anh", "Hữu", "Thanh", "Gia", "Xuân"]
+DEM_NU = ["Thị", "Thị", "Thị", "Ngọc", "Thu", "Mỹ", "Thanh", "Hồng", "Kim", "Phương"]
+TEN_NAM = [
+    "An",
+    "Bình",
+    "Dũng",
+    "Huy",
+    "Khoa",
+    "Long",
+    "Nam",
+    "Phúc",
+    "Quân",
+    "Sơn",
+    "Thành",
+    "Tuấn",
+    "Vinh",
+    "Hải",
+    "Khải",
+    "Hiếu",
+    "Đạt",
+    "Minh",
+]
+TEN_NU = [
+    "Anh",
+    "Châu",
+    "Hà",
+    "Linh",
+    "Mai",
+    "Ngân",
+    "Lan",
+    "Phương",
+    "Trang",
+    "Thảo",
+    "Hương",
+    "Yến",
+    "Vy",
+    "Oanh",
+    "Nhung",
+    "Diệp",
+    "Hạnh",
+    "Quỳnh",
+]
+
+DUONG = [
+    "Lê Lợi",
+    "Nguyễn Huệ",
+    "Hai Bà Trưng",
+    "Trần Hưng Đạo",
+    "Lý Thường Kiệt",
+    "Phan Chu Trinh",
+    "Hùng Vương",
+    "Nguyễn Trãi",
+    "Điện Biên Phủ",
+    "Cách Mạng Tháng 8",
+    "Nguyễn Văn Linh",
+    "Lạch Tray",
+    "Kim Mã",
+    "Cầu Giấy",
+    "Nguyễn Tri Phương",
+    "Trần Phú",
+    "Hoàng Diệu",
+    "Quang Trung",
+    "Lê Duẩn",
+]
+
+DAU_SO = [
+    "032",
+    "033",
+    "034",
+    "035",
+    "036",
+    "037",
+    "038",
+    "039",
+    "056",
+    "058",
+    "059",
+    "070",
+    "076",
+    "077",
+    "078",
+    "079",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094",
+    "096",
+    "097",
+    "098",
+    "099",
+]
+
+# (tên bệnh, tuổi tối thiểu để có thể mắc)
+TIEN_SU = [
+    ("Viêm loét dạ dày", 18),
+    ("Tăng huyết áp nhẹ", 40),
+    ("Dị ứng hải sản", 0),
+    ("Viêm xoang mãn tính", 10),
+    ("Tiểu đường tuýp 2", 40),
+    ("Hen suyễn", 0),
+    ("Viêm da cơ địa", 0),
+    ("Đau thắt lưng", 25),
+    ("Rối loạn mỡ máu", 40),
+]
+
+NHOM_MAU = ["O", "A", "B", "AB"]
+TRONG_SO_NHOM_MAU = [40, 27, 25, 8]
+
+# Tên ca lấy từ CA_TRUC để không khai báo lại: T2_SANG, T2_CHIEU, T3_SANG, ...
+TAT_CA_CA_LAM = [f"T{thu}_{ca}" for thu in range(2, 8) for ca in CA_TRUC]
+
+# Dùng khi data/tinh_thanh.json bị xóa hoặc hỏng
+DIA_CHI_DU_PHONG = {
+    "Hà Nội": ["Phường Hoàn Kiếm", "Phường Ba Đình", "Phường Cầu Giấy"],
+    "Đà Nẵng": ["Phường Hải Châu", "Phường Thanh Khê", "Phường Sơn Trà"],
+    "TP.HCM": ["Phường Bến Thành", "Phường Sài Gòn", "Phường Tân Định"],
+}
