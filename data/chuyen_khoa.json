@@ -1,32 +1,52 @@
 [
   {
     "ma_chuyen_khoa": "01",
-    "ten_chuyen_khoa": "Nội khoa",
-    "mo_ta": "Khám và điều trị các bệnh lý tim mạch, tiêu hóa, hô hấp, nội tiết"
+    "ten_chuyen_khoa": "Nội khoa tổng quát",
+    "mo_ta": "Khám và điều trị các bệnh lý nội khoa chung, tim mạch, tiêu hóa, hô hấp"
   },
   {
     "ma_chuyen_khoa": "02",
+    "ten_chuyen_khoa": "Ngoại khoa (sơ cứu, tiểu phẫu)",
+    "mo_ta": "Thực hiện sơ cấp cứu, xử lý vết thương và các ca tiểu phẫu ngoại khoa"
+  },
+  {
+    "ma_chuyen_khoa": "03",
+    "ten_chuyen_khoa": "Sản - Phụ khoa",
+    "mo_ta": "Khám thai, chăm sóc sức khỏe sinh sản và điều trị bệnh lý phụ khoa"
+  },
+  {
+    "ma_chuyen_khoa": "04",
     "ten_chuyen_khoa": "Nhi khoa",
     "mo_ta": "Khám và điều trị các bệnh lý cho trẻ sơ sinh và trẻ em"
   },
   {
-    "ma_chuyen_khoa": "03",
-    "ten_chuyen_khoa": "Răng - Hàm - Mặt",
-    "mo_ta": "Khám, điều trị nha khoa tổng quát và chỉnh nha"
-  },
-  {
-    "ma_chuyen_khoa": "04",
-    "ten_chuyen_khoa": "Tai - Mũi - Họng",
-    "mo_ta": "Khám nội soi và điều trị các bệnh lý tai, mũi, họng"
-  },
-  {
     "ma_chuyen_khoa": "05",
-    "ten_chuyen_khoa": "Mắt",
-    "mo_ta": "Khám khúc xạ, điều trị các bệnh lý nhãn khoa"
+    "ten_chuyen_khoa": "Tai - Mũi - Họng",
+    "mo_ta": "Khám nội soi và điều trị các bệnh lý về tai, mũi, họng"
   },
   {
     "ma_chuyen_khoa": "06",
+    "ten_chuyen_khoa": "Mắt",
+    "mo_ta": "Khám khúc xạ, kiểm tra thị lực và điều trị các bệnh lý nhãn khoa"
+  },
+  {
+    "ma_chuyen_khoa": "07",
+    "ten_chuyen_khoa": "Răng - Hàm - Mặt",
+    "mo_ta": "Khám, điều trị nha khoa tổng quát và thẩm mỹ răng hàm mặt"
+  },
+  {
+    "ma_chuyen_khoa": "08",
     "ten_chuyen_khoa": "Da liễu",
-    "mo_ta": "Khám và điều trị các bệnh ngoài da và dị ứng"
+    "mo_ta": "Khám và điều trị các bệnh lý ngoài da, tóc, móng và dị ứng"
+  },
+  {
+    "ma_chuyen_khoa": "09",
+    "ten_chuyen_khoa": "Chẩn đoán hình ảnh (X-quang, Siêu âm, CT, MRI)",
+    "mo_ta": "Thực hiện các kỹ thuật chẩn đoán bằng hình ảnh như X-quang, siêu âm, CT, MRI"
+  },
+  {
+    "ma_chuyen_khoa": "10",
+    "ten_chuyen_khoa": "Xét nghiệm (Huyết học, Sinh hóa, Vi sinh, Giải phẫu bệnh)",
+    "mo_ta": "Thực hiện các xét nghiệm huyết học, sinh hóa, vi sinh và giải phẫu bệnh"
   }
 ]
