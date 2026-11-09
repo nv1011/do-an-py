@@ -72,6 +72,16 @@ def ngay_tu_ma_benh_nhan(ma):
     return datetime.strptime(ma[0:8], "%d%m%Y").date()
 
 
+def la_ma_chuyen_khoa_hop_le(ma):
+    """Mã chuyên khoa gồm đúng 2 chữ số (VD: '01', '02')."""
+    return bool(re.fullmatch(r"\d{2}", str(ma).strip())) if ma else False
+
+
+def la_ma_dich_vu_hop_le(ma):
+    """Mã dịch vụ gồm tiền tố DV kèm ít nhất 3 chữ số (VD: 'DV001')."""
+    return bool(re.fullmatch(r"DV\d{3,}", str(ma).strip())) if ma else False
+
+
 def la_ma_bac_si_hop_le(ma):
     """Mã bác sĩ gồm đúng 9 chữ số."""
     return bool(re.fullmatch(r"\d{9}", ma))
