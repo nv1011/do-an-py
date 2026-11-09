@@ -16,13 +16,7 @@ class QuanLyTaiKhoan:
     """
 
     def __init__(self, json_store=None, ten_file=FILE_TAI_KHOAN, quan_ly_bac_si=None):
-        """Khởi tạo dịch vụ quản lý tài khoản với bộ lưu trữ JsonStore.
-
-        Tham số:
-            json_store (JsonStore | None): Bộ lưu trữ JsonStore tùy biến hoặc mặc định.
-            ten_file (Path | str): Đường dẫn tới file lưu trữ dữ liệu tài khoản JSON.
-            quan_ly_bac_si (QuanLyBacSi | None): Dịch vụ quản lý bác sĩ dùng để kiểm tra tính tồn tại của bác sĩ.
-        """
+        """Khởi tạo dịch vụ quản lý tài khoản với bộ lưu trữ JsonStore."""
         self.store = json_store or JsonStore()
         self.ten_file = ten_file
         self.quan_ly_bac_si = quan_ly_bac_si
@@ -52,14 +46,7 @@ class QuanLyTaiKhoan:
         return list(self._danh_sach)
 
     def tim_theo_ten(self, ten):
-        """Tìm tài khoản theo tên đăng nhập (không phân biệt chữ hoa/thường).
-
-        Tham số:
-            ten (str): Tên đăng nhập cần tìm.
-
-        Trả về:
-            TaiKhoan | None: Đối tượng tài khoản tìm được hoặc None nếu không có.
-        """
+        """Tìm tài khoản theo tên đăng nhập (không phân biệt chữ hoa/thường)."""
         if not ten:
             return None
         ten_clean = str(ten).strip().lower()
@@ -69,14 +56,7 @@ class QuanLyTaiKhoan:
         return None
 
     def tim_theo_ma_bac_si(self, ma_bac_si):
-        """Tìm tài khoản được liên kết với mã bác sĩ cụ thể.
-
-        Tham số:
-            ma_bac_si (str): Mã định danh bác sĩ 9 số.
-
-        Trả về:
-            TaiKhoan | None: Đối tượng tài khoản gắn với bác sĩ này hoặc None.
-        """
+        """Tìm tài khoản được liên kết với mã bác sĩ cụ thể."""
         if not ma_bac_si:
             return None
         ma_clean = str(ma_bac_si).strip()
@@ -86,41 +66,19 @@ class QuanLyTaiKhoan:
         return None
 
     def lay_theo_vai_tro(self, vai_tro):
-        """Lọc danh sách các tài khoản theo vai trò cụ thể ('admin', 'le_tan', 'bac_si').
-
-        Tham số:
-            vai_tro (str): Tên vai trò cần lọc.
-
-        Trả về:
-            list[TaiKhoan]: Danh sách các tài khoản thỏa mãn.
-        """
+        """Lọc danh sách các tài khoản theo vai trò cụ thể ('admin', 'le_tan', 'bac_si')."""
         vt_clean = str(vai_tro).strip().lower()
         return [tk for tk in self._danh_sach if tk.vai_tro == vt_clean]
 
     def _la_admin(self, nguoi_thuc_hien):
-        """Kiểm tra người thực hiện thao tác có phải là tài khoản admin đang hoạt động hay không.
-
-        Tham số:
-            nguoi_thuc_hien (str): Tên đăng nhập của tài khoản yêu cầu thao tác.
-
-        Trả về:
-            bool: True nếu là admin đang hoạt động; False nếu không hợp lệ hoặc bị khóa.
-        """
+        """Kiểm tra người thực hiện thao tác có phải là tài khoản admin đang hoạt động hay không."""
         if not nguoi_thuc_hien:
             return False
         tk = self.tim_theo_ten(nguoi_thuc_hien)
         return tk is not None and tk.trang_thai and tk.vai_tro == VAI_TRO_ADMIN
 
     def xac_thuc(self, ten_dang_nhap, mat_khau_nhap):
-        """Xác thực đăng nhập người dùng bằng thuật toán băm mật khẩu kèm salt.
-
-        Tham số:
-            ten_dang_nhap (str): Tên tài khoản nhập vào form.
-            mat_khau_nhap (str): Mật khẩu thô người dùng gõ.
-
-        Trả về:
-            str | None: Tên vai trò ('admin', 'le_tan' hoặc 'bac_si') nếu đúng; None nếu sai hoặc tài khoản bị khóa.
-        """
+        """Xác thực đăng nhập người dùng bằng thuật toán băm mật khẩu kèm salt."""
         tk = self.tim_theo_ten(ten_dang_nhap)
         if not tk or not tk.trang_thai:
             return None
@@ -129,16 +87,7 @@ class QuanLyTaiKhoan:
         return None
 
     def doi_mat_khau(self, ten, mk_cu, mk_moi):
-        """Người dùng tự đổi mật khẩu tài khoản của mình.
-
-        Tham số:
-            ten (str): Tên tài khoản yêu cầu đổi mật khẩu.
-            mk_cu (str): Mật khẩu hiện tại để xác thực.
-            mk_moi (str): Mật khẩu mới mong muốn.
-
-        Trả về:
-            tuple[bool, str]: (Thành công, Thông điệp phản hồi).
-        """
+        """Người dùng tự đổi mật khẩu tài khoản của mình."""
         tk = self.tim_theo_ten(ten)
         if not tk:
             return False, f"Không tìm thấy tài khoản '{ten}'!"
@@ -162,16 +111,6 @@ class QuanLyTaiKhoan:
 
         Khi vai trò là 'bac_si', bắt buộc phải cung cấp mã bác sĩ hợp lệ (9 chữ số)
         và chưa có tài khoản nào khác được gán cho bác sĩ đó.
-
-        Tham số:
-            ten (str): Tên đăng nhập mới (ít nhất 3 ký tự, không dấu cách).
-            mat_khau (str): Mật khẩu thô khởi tạo (ít nhất 6 ký tự, có ký tự đặc biệt).
-            vai_tro (str): Vai trò ('admin', 'le_tan', hoặc 'bac_si').
-            nguoi_thuc_hien (str): Tên đăng nhập của admin đang thực hiện thao tác.
-            ma_bac_si (str | None): Mã bác sĩ 9 số liên kết (bắt buộc đối với vai trò 'bac_si').
-
-        Trả về:
-            tuple[bool, str, TaiKhoan | None]: (Thành công, Thông điệp, Đối tượng tài khoản vừa tạo).
         """
         if not self._la_admin(nguoi_thuc_hien):
             return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền tạo tài khoản!", None
@@ -223,15 +162,7 @@ class QuanLyTaiKhoan:
             return False, str(e), None
 
     def khoa_tai_khoan(self, ten, nguoi_thuc_hien=None):
-        """Khóa tài khoản không cho phép đăng nhập (Quyền hạn: Chỉ Admin).
-
-        Tham số:
-            ten (str): Tên tài khoản cần khóa.
-            nguoi_thuc_hien (str): Tên đăng nhập của admin đang thực hiện thao tác.
-
-        Trả về:
-            tuple[bool, str]: (Thành công, Thông điệp phản hồi).
-        """
+        """Khóa tài khoản không cho phép đăng nhập (Quyền hạn: Chỉ Admin)."""
         if not self._la_admin(nguoi_thuc_hien):
             return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền khóa tài khoản!"
 
@@ -256,15 +187,7 @@ class QuanLyTaiKhoan:
         return True, f"Đã khóa tài khoản '{tk.ten_dang_nhap}' thành công!"
 
     def mo_khoa_tai_khoan(self, ten, nguoi_thuc_hien=None):
-        """Mở khóa cho tài khoản bị vô hiệu hóa (Quyền hạn: Chỉ Admin).
-
-        Tham số:
-            ten (str): Tên tài khoản cần mở khóa.
-            nguoi_thuc_hien (str): Tên đăng nhập của admin đang thực hiện thao tác.
-
-        Trả về:
-            tuple[bool, str]: (Thành công, Thông điệp phản hồi).
-        """
+        """Mở khóa cho tài khoản bị vô hiệu hóa (Quyền hạn: Chỉ Admin)."""
         if not self._la_admin(nguoi_thuc_hien):
             return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền mở khóa tài khoản!"
 
@@ -283,16 +206,7 @@ class QuanLyTaiKhoan:
         return True, f"Đã mở khóa tài khoản '{tk.ten_dang_nhap}' thành công!"
 
     def dat_lai_mat_khau(self, ten, mat_khau_moi, nguoi_thuc_hien=None):
-        """Admin đặt lại mật khẩu cho một tài khoản mà không cần biết mật khẩu cũ.
-
-        Tham số:
-            ten (str): Tên tài khoản cần đặt lại mật khẩu.
-            mat_khau_moi (str): Mật khẩu mới cần gán.
-            nguoi_thuc_hien (str): Tên đăng nhập của admin đang thực hiện thao tác.
-
-        Trả về:
-            tuple[bool, str]: (Thành công, Thông điệp phản hồi).
-        """
+        """Admin đặt lại mật khẩu cho một tài khoản mà không cần biết mật khẩu cũ."""
         if not self._la_admin(nguoi_thuc_hien):
             return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền đặt lại mật khẩu!"
 
@@ -316,15 +230,7 @@ class QuanLyTaiKhoan:
             return False, str(e)
 
     def xoa_tai_khoan(self, ten, nguoi_thuc_hien=None):
-        """Xóa tài khoản khỏi hệ thống (Quyền hạn: Chỉ Admin).
-
-        Tham số:
-            ten (str): Tên tài khoản cần xóa.
-            nguoi_thuc_hien (str): Tên đăng nhập của admin đang thực hiện thao tác.
-
-        Trả về:
-            tuple[bool, str]: (Thành công, Thông điệp phản hồi).
-        """
+        """Xóa tài khoản khỏi hệ thống (Quyền hạn: Chỉ Admin)."""
         if not self._la_admin(nguoi_thuc_hien):
             return False, "Quyền bị từ chối: Chỉ quản trị viên mới có quyền xóa tài khoản!"
 
