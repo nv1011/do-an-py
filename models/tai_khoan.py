@@ -1,18 +1,18 @@
-
 import re
 from datetime import date, datetime
-from config import DANH_SACH_VAI_TRO, VAI_TRO_ADMIN, VAI_TRO_LE_TAN
-from utils.validators import tao_salt, bam_mat_khau, xac_thuc_mat_khau
+from config import DANH_SACH_VAI_TRO, VAI_TRO_ADMIN, VAI_TRO_LE_TAN, VAI_TRO_BAC_SI
+from utils.validators import tao_salt, bam_mat_khau, xac_thuc_mat_khau, la_ma_bac_si_hop_le
 
 
 class TaiKhoan:
 
     def __init__(self, ten_dang_nhap, mat_khau_hash, salt,
-                 vai_tro, trang_thai=True, ngay_tao=None):
+                 vai_tro, trang_thai=True, ngay_tao=None, ma_bac_si=None):
         self.ten_dang_nhap = ten_dang_nhap
         self.mat_khau_hash = mat_khau_hash
         self.salt = salt
         self.vai_tro = vai_tro
+        self.ma_bac_si = ma_bac_si
         self.trang_thai = trang_thai
 
         if ngay_tao is None:
@@ -63,7 +63,7 @@ class TaiKhoan:
 
     @property
     def vai_tro(self):
-        """Vai trò sử dụng hệ thống ('admin' hoặc 'le_tan')."""
+        """Vai trò sử dụng hệ thống ('admin', 'le_tan', hoặc 'bac_si')."""
         return self._vai_tro
 
     @vai_tro.setter
@@ -73,6 +73,23 @@ class TaiKhoan:
             hop_le = ", ".join(DANH_SACH_VAI_TRO)
             raise ValueError(f"Vai trò không hợp lệ! Chỉ chấp nhận: {hop_le}")
         self._vai_tro = val
+
+    @property
+    def ma_bac_si(self):
+        """Mã bác sĩ 9 số liên kết với tài khoản (áp dụng khi vai trò là 'bac_si')."""
+        return self._ma_bac_si
+
+    @ma_bac_si.setter
+    def ma_bac_si(self, value):
+        val = str(value).strip() if value is not None else ""
+        if not val:
+            if getattr(self, "_vai_tro", None) == VAI_TRO_BAC_SI:
+                raise ValueError("Tài khoản vai trò bác sĩ bắt buộc phải có mã bác sĩ liên kết!")
+            self._ma_bac_si = None
+        else:
+            if not la_ma_bac_si_hop_le(val):
+                raise ValueError("Mã bác sĩ liên kết không hợp lệ (phải gồm đúng 9 chữ số)!")
+            self._ma_bac_si = val
 
     @property
     def trang_thai(self):
@@ -115,6 +132,7 @@ class TaiKhoan:
             "mat_khau_hash": self._mat_khau_hash,
             "salt": self._salt,
             "vai_tro": self._vai_tro,
+            "ma_bac_si": self._ma_bac_si,
             "trang_thai": self._trang_thai,
             "ngay_tao": str(self._ngay_tao),
         }
@@ -126,12 +144,13 @@ class TaiKhoan:
             mat_khau_hash=d["mat_khau_hash"],
             salt=d["salt"],
             vai_tro=d["vai_tro"],
+            ma_bac_si=d.get("ma_bac_si"),
             trang_thai=d.get("trang_thai", True),
             ngay_tao=d.get("ngay_tao"),
         )
 
     @classmethod
-    def tao_moi(cls, ten_dang_nhap, mat_khau_tho, vai_tro):
+    def tao_moi(cls, ten_dang_nhap, mat_khau_tho, vai_tro, ma_bac_si=None):
         val = (mat_khau_tho or "").strip()
         if len(val) < 6:
             raise ValueError("Mật khẩu phải có ít nhất 6 ký tự!")
@@ -145,10 +164,12 @@ class TaiKhoan:
             mat_khau_hash=mk_hash,
             salt=salt,
             vai_tro=vai_tro,
+            ma_bac_si=ma_bac_si,
             trang_thai=True,
             ngay_tao=date.today(),
         )
 
     def __str__(self):
         tt = "Đang hoạt động" if self._trang_thai else "Bị khóa"
-        return f"Tài khoản: {self._ten_dang_nhap} | Vai trò: {self._vai_tro} | Trạng thái: {tt} | Ngày tạo: {self._ngay_tao}"
+        bs_info = f" | Bác sĩ: {self._ma_bac_si}" if self._ma_bac_si else ""
+        return f"Tài khoản: {self._ten_dang_nhap} | Vai trò: {self._vai_tro}{bs_info} | Trạng thái: {tt} | Ngày tạo: {self._ngay_tao}"
