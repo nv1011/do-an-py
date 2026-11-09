@@ -20,7 +20,6 @@ FILE_DICH_VU = DATA_DIR / "dich_vu.json"
 FILE_LICH_HEN = DATA_DIR / "lich_hen.json"
 FILE_PHIEU_KHAM = DATA_DIR / "phieu_kham.json"
 FILE_TAI_KHOAN = DATA_DIR / "tai_khoan.json"
-FILE_DIA_CHI = DATA_DIR / "dia_chi.json"
 
 API_DIA_CHI_URL = "https://tinhthanhpho.com/api/v1"
 API_TIMEOUT_GIAY = 10

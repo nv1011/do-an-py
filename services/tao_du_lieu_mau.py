@@ -10,9 +10,11 @@ from config import (
     BACKUP_DIR,
     CHUYEN_KHOA_MAX,
     CHUYEN_KHOA_MIN,
+    # muon thay doi dai gioi han so lg chuyen khoa thi sua config.py
     DAU_SO,
     DEM_NAM,
     DEM_NU,
+    # ten dem co san de rand
     DIA_CHI_DU_PHONG,
     DUONG,
     FILE_BAC_SI,
@@ -41,10 +43,12 @@ from config import (
 )
 
 
-def bo_dau(chuoi):
+def bo_dau(chuoi):  # bo dau tieng viet de xu li o cac buoc sau
     chuoi = chuoi.replace("đ", "d").replace("Đ", "D")
     phan_tach = unicodedata.normalize("NFD", chuoi)
+    # unicodedata.normalize(form, unistr) chuan hoa cac unistr (unicode string) ve 1 dang chuan duy nhat theo form (NFC, NFD, NFKC, NFKD)
     return "".join(c for c in phan_tach if unicodedata.category(c) != "Mn")
+    # Mn: Mark, Nonspacing (dau phu khong gian) - unicode category
 
 
 def doc_dia_chi_tu_file(duong_dan=FILE_TINH_THANH):
@@ -77,6 +81,10 @@ def chon_dia_chi(dia_chi_goc):
 
 def sinh_ho_ten(gioi_tinh):
     ho = random.choices(HO, weights=TRONG_SO_HO)[0]
+    # rand chon 1 phan tu ho tu list HO
+    # voi trong so tuong ung trong list TRONG_SO_HO (cung do dai voi HO) de dieu chinh xac suat xuat hien cua tung ho
+    # vd: Nguyen = 30/96, Tran = 11/96, Le = 10/96, ...
+    # random.choices() return list nen [0] giup lay pt dau tien ra => string ho
     if gioi_tinh == "Nam":
         return f"{ho} {random.choice(DEM_NAM)} {random.choice(TEN_NAM)}"
     return f"{ho} {random.choice(DEM_NU)} {random.choice(TEN_NU)}"
@@ -241,3 +249,5 @@ def tao_du_lieu_mau(so_benh_nhan=SO_BENH_NHAN, so_bac_si=SO_BAC_SI, seed=SEED):
 
 if __name__ == "__main__":
     tao_du_lieu_mau()
+
+# muon test thi termnal -> python -m services.tao_du_lieu_mau

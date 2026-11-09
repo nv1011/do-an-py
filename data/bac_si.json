@@ -1,130 +1,130 @@
 [
   {
-    "ma_dinh_danh": "030110001",
-    "ho_ten": "Dương Gia Quân",
-    "dia_chi": "116 Quang Trung",
-    "tinh_thanh": "Quảng Trị",
-    "xa_phuong": "Xã Kim Phú",
+    "ma_dinh_danh": "010914001",
+    "ho_ten": "Huỳnh Quang Long",
+    "dia_chi": "37 Quang Trung",
+    "tinh_thanh": "Phú Thọ",
+    "xa_phuong": "Xã Thọ Văn",
     "gioi_tinh": "Nam",
-    "ngay_sinh": "1981-01-19",
-    "sdt": "0585306580",
+    "ngay_sinh": "1989-05-02",
+    "sdt": "0915781144",
     "lich_lam_viec": [
-      "T2_SANG",
-      "T5_SANG",
-      "T7_CHIEU"
+      "T2_CHIEU",
+      "T3_CHIEU",
+      "T6_SANG"
     ],
-    "luong_cb": 21000000
+    "luong_cb": 26000000
   },
   {
-    "ma_dinh_danh": "030312001",
-    "ho_ten": "Hồ Thanh Minh",
-    "dia_chi": "163 Quang Trung",
-    "tinh_thanh": "Sơn La",
-    "xa_phuong": "Xã Đoàn Kết",
+    "ma_dinh_danh": "020512001",
+    "ho_ten": "Nguyễn Văn Dũng",
+    "dia_chi": "67 Hùng Vương",
+    "tinh_thanh": "Quảng Ninh",
+    "xa_phuong": "Phường Đông Mai",
     "gioi_tinh": "Nam",
-    "ngay_sinh": "1986-03-20",
-    "sdt": "0359901559",
+    "ngay_sinh": "1981-12-15",
+    "sdt": "0822041849",
+    "lich_lam_viec": [
+      "T2_CHIEU",
+      "T5_SANG",
+      "T6_SANG"
+    ],
+    "luong_cb": 22500000
+  },
+  {
+    "ma_dinh_danh": "010203001",
+    "ho_ten": "Huỳnh Minh Long",
+    "dia_chi": "2 Lê Lợi",
+    "tinh_thanh": "Quảng Trị",
+    "xa_phuong": "Xã Vĩnh Hoàng",
+    "gioi_tinh": "Nam",
+    "ngay_sinh": "1966-04-20",
+    "sdt": "0585658751",
+    "lich_lam_viec": [
+      "T2_CHIEU",
+      "T4_CHIEU",
+      "T6_SANG"
+    ],
+    "luong_cb": 30000000
+  },
+  {
+    "ma_dinh_danh": "030812001",
+    "ho_ten": "Đỗ Ngọc Linh",
+    "dia_chi": "175 Nguyễn Trãi",
+    "tinh_thanh": "Thái Nguyên",
+    "xa_phuong": "Xã Phú Lạc",
+    "gioi_tinh": "Nữ",
+    "ngay_sinh": "1973-10-29",
+    "sdt": "0965570775",
     "lich_lam_viec": [
       "T3_SANG",
       "T3_CHIEU",
-      "T4_CHIEU"
-    ],
-    "luong_cb": 21500000
-  },
-  {
-    "ma_dinh_danh": "030311001",
-    "ho_ten": "Lê Đức Thành",
-    "dia_chi": "76 Lê Duẩn",
-    "tinh_thanh": "Phú Thọ",
-    "xa_phuong": "Xã Tiên Lương",
-    "gioi_tinh": "Nam",
-    "ngay_sinh": "1979-11-22",
-    "sdt": "0891677095",
-    "lich_lam_viec": [
-      "T3_SANG",
-      "T5_SANG",
-      "T5_CHIEU"
-    ],
-    "luong_cb": 20750000
-  },
-  {
-    "ma_dinh_danh": "030818001",
-    "ho_ten": "Nguyễn Văn Sơn",
-    "dia_chi": "80 Lạch Tray",
-    "tinh_thanh": "Quảng Ninh",
-    "xa_phuong": "Phường An Sinh",
-    "gioi_tinh": "Nam",
-    "ngay_sinh": "1989-07-22",
-    "sdt": "0921782469",
-    "lich_lam_viec": [
-      "T2_CHIEU",
-      "T4_SANG",
-      "T6_SANG"
-    ],
-    "luong_cb": 18000000
-  },
-  {
-    "ma_dinh_danh": "020603001",
-    "ho_ten": "Lê Quốc An",
-    "dia_chi": "169 Lý Thường Kiệt",
-    "tinh_thanh": "Quảng Ngãi",
-    "xa_phuong": "Xã Cà Đam",
-    "gioi_tinh": "Nam",
-    "ngay_sinh": "1965-09-09",
-    "sdt": "0563950241",
-    "lich_lam_viec": [
-      "T2_SANG",
-      "T2_CHIEU",
-      "T7_CHIEU"
-    ],
-    "luong_cb": 24000000
-  },
-  {
-    "ma_dinh_danh": "020612001",
-    "ho_ten": "Huỳnh Minh Hiếu",
-    "dia_chi": "113 Nguyễn Tri Phương",
-    "tinh_thanh": "TP.HCM",
-    "xa_phuong": "Phường Tân Uyên",
-    "gioi_tinh": "Nam",
-    "ngay_sinh": "1985-08-26",
-    "sdt": "0364446164",
-    "lich_lam_viec": [
-      "T2_SANG",
-      "T3_SANG",
-      "T4_CHIEU"
-    ],
-    "luong_cb": 23500000
-  },
-  {
-    "ma_dinh_danh": "010925001",
-    "ho_ten": "Trần Thị Linh",
-    "dia_chi": "144 Nguyễn Tri Phương",
-    "tinh_thanh": "Đà Nẵng",
-    "xa_phuong": "Xã Tiên Phước",
-    "gioi_tinh": "Nữ",
-    "ngay_sinh": "1987-09-28",
-    "sdt": "0377289081",
-    "lich_lam_viec": [
-      "T4_SANG",
-      "T5_CHIEU",
       "T6_CHIEU"
     ],
-    "luong_cb": 24750000
+    "luong_cb": 19500000
   },
   {
-    "ma_dinh_danh": "010100001",
-    "ho_ten": "Hoàng Đức Tuấn",
-    "dia_chi": "3 Hoàng Diệu",
-    "tinh_thanh": "Ninh Bình",
-    "xa_phuong": "Xã Vụ Bản",
-    "gioi_tinh": "Nam",
-    "ngay_sinh": "1961-09-18",
-    "sdt": "0362655989",
+    "ma_dinh_danh": "030521001",
+    "ho_ten": "Huỳnh Ngọc Vy",
+    "dia_chi": "4 Hai Bà Trưng",
+    "tinh_thanh": "Hưng Yên",
+    "xa_phuong": "Phường Đường Hào",
+    "gioi_tinh": "Nữ",
+    "ngay_sinh": "1982-10-27",
+    "sdt": "0945654867",
+    "lich_lam_viec": [
+      "T2_SANG",
+      "T2_CHIEU",
+      "T3_CHIEU"
+    ],
+    "luong_cb": 19250000
+  },
+  {
+    "ma_dinh_danh": "010706001",
+    "ho_ten": "Nguyễn Thị Ngân",
+    "dia_chi": "24 Lê Duẩn",
+    "tinh_thanh": "Khánh Hòa",
+    "xa_phuong": "Phường Phan Rang",
+    "gioi_tinh": "Nữ",
+    "ngay_sinh": "1976-10-01",
+    "sdt": "0894930462",
     "lich_lam_viec": [
       "T3_CHIEU",
-      "T5_CHIEU",
-      "T6_SANG"
+      "T4_CHIEU",
+      "T5_CHIEU"
     ],
-    "luong_cb": 29500000
+    "luong_cb": 30000000
+  },
+  {
+    "ma_dinh_danh": "030521002",
+    "ho_ten": "Trần Phương Nhung",
+    "dia_chi": "51 Lê Duẩn",
+    "tinh_thanh": "Quảng Trị",
+    "xa_phuong": "Xã Hoàn Lão",
+    "gioi_tinh": "Nữ",
+    "ngay_sinh": "1988-08-05",
+    "sdt": "0836851918",
+    "lich_lam_viec": [
+      "T3_SANG",
+      "T4_CHIEU",
+      "T7_CHIEU"
+    ],
+    "luong_cb": 18750000
+  },
+  {
+    "ma_dinh_danh": "010714001",
+    "ho_ten": "Vũ Thị Hạnh",
+    "dia_chi": "72 Nguyễn Tri Phương",
+    "tinh_thanh": "Hải Phòng",
+    "xa_phuong": "Phường Bắc An Phụ",
+    "gioi_tinh": "Nữ",
+    "ngay_sinh": "1975-06-22",
+    "sdt": "0336253658",
+    "lich_lam_viec": [
+      "T3_CHIEU",
+      "T5_SANG",
+      "T6_CHIEU"
+    ],
+    "luong_cb": 27000000
   }
 ]
