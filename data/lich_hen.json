@@ -42,7 +42,7 @@
   {
     "ma_lich_hen": "LH005",
     "ma_benh_nhan": "12102026000006",
-    "ma_bac_si": "020419003",
+    "ma_bac_si": "010518005",
     "ngay_hen": "2026-10-12",
     "gio_bat_dau": "10:15",
     "thoi_luong": 30,
@@ -67,7 +67,7 @@
     "gio_bat_dau": "08:00",
     "thoi_luong": 60,
     "trang_thai": "Da_huy",
-    "ly_do_kham": ""
+    "ly_do_kham": "Bệnh nhân bận công tác đột xuất"
   },
   {
     "ma_lich_hen": "LH008",
@@ -77,6 +77,36 @@
     "gio_bat_dau": "07:30",
     "thoi_luong": 45,
     "trang_thai": "Da_huy",
-    "ly_do_kham": ""
+    "ly_do_kham": "Hủy do chuyển viện"
+  },
+  {
+    "ma_lich_hen": "LH009",
+    "ma_benh_nhan": "12102026000008",
+    "ma_bac_si": "010518005",
+    "ngay_hen": "2026-10-30",
+    "gio_bat_dau": "07:45",
+    "thoi_luong": 60,
+    "trang_thai": "Da_huy",
+    "ly_do_kham": "Bệnh nhân đổi lịch khám"
+  },
+  {
+    "ma_lich_hen": "LH010",
+    "ma_benh_nhan": "12102026000006",
+    "ma_bac_si": "030321004",
+    "ngay_hen": "2026-10-30",
+    "gio_bat_dau": "08:30",
+    "thoi_luong": 45,
+    "trang_thai": "Cho_kham",
+    "ly_do_kham": "Khám kiểm tra định kỳ"
+  },
+  {
+    "ma_lich_hen": "LH011",
+    "ma_benh_nhan": "12102026000008",
+    "ma_bac_si": "020419003",
+    "ngay_hen": "2026-10-30",
+    "gio_bat_dau": "08:30",
+    "thoi_luong": 45,
+    "trang_thai": "Cho_kham",
+    "ly_do_kham": "Tái khám hô hấp"
   }
 ]
